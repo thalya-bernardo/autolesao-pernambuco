@@ -20,6 +20,7 @@ import streamlit as st
 
 warnings.filterwarnings("ignore")
 
+
 # ============================================================
 # 1. CONFIGURAÇÃO
 # ============================================================
@@ -107,174 +108,177 @@ ORDEM_N_METODOS = [
     "3 ou mais métodos",
 ]
 
+
 # ============================================================
 # 2. CSS
 # ============================================================
 
 st.markdown(
     """
-    <style>
+<style>
 
-    .block-container {
-        max-width: 1800px;
-        padding-top: 1.2rem;
-        padding-left: 2rem;
-        padding-right: 2rem;
-        padding-bottom: 4rem;
-    }
+.block-container {
+    max-width: 1800px;
+    padding-top: 1.4rem;
+    padding-left: 2rem;
+    padding-right: 2rem;
+    padding-bottom: 4rem;
+}
 
-    /* ------------------------------------------------------
-       CABEÇALHO
-       ------------------------------------------------------ */
+/* ==========================================================
+   CABEÇALHO
+   ========================================================== */
 
-    .cabecalho-institucional {
-        width: 100%;
-        padding: 0.5rem 0 1.8rem 0;
-        margin-bottom: 0.6rem;
-    }
+.header-spacer {
+    height: 8px;
+}
 
-    .cabecalho-centro {
-        width: 100%;
-        text-align: center;
-        overflow: visible;
+.instituicao {
+    width: 100%;
+    text-align: center;
+    color: #173B6C;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1.35;
+    letter-spacing: 0.2px;
+    margin: 0 0 6px 0;
+}
+
+.curso {
+    width: 100%;
+    text-align: center;
+    color: #5D6875;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.4;
+    margin: 0 0 15px 0;
+}
+
+.titulo-principal {
+    width: 100%;
+    max-width: 1150px;
+    text-align: center;
+    color: #173B6C;
+    font-family: Arial, sans-serif;
+    font-size: 27px;
+    font-weight: 800;
+    line-height: 1.20;
+    margin: 0 auto 10px auto;
+    word-break: normal;
+    overflow-wrap: normal;
+}
+
+.subtitulo {
+    width: 100%;
+    text-align: center;
+    color: #5C6673;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.4;
+    margin: 0;
+}
+
+.header-bottom-space {
+    height: 20px;
+}
+
+/* ==========================================================
+   SEÇÕES
+   ========================================================== */
+
+.titulo-secao {
+    font-size: 23px;
+    font-weight: 800;
+    color: #173B6C;
+    margin-top: 34px;
+    margin-bottom: 5px;
+    border-bottom: 2px solid #E6E9ED;
+    padding-bottom: 7px;
+}
+
+.descricao-secao {
+    color: #68727D;
+    font-size: 13px;
+    margin-bottom: 16px;
+}
+
+/* ==========================================================
+   MÉTRICAS
+   ========================================================== */
+
+div[data-testid="stMetric"] {
+    background: white;
+    border: 1px solid #E2E6EB;
+    border-radius: 12px;
+    padding: 12px 14px;
+    min-height: 105px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04);
+}
+
+div[data-testid="stMetricLabel"] {
+    font-size: 13px;
+}
+
+div[data-testid="stMetricValue"] {
+    font-size: 27px;
+    font-weight: 750;
+    color: #173B6C;
+}
+
+/* ==========================================================
+   SIDEBAR / COLUNAS / IMAGENS
+   ========================================================== */
+
+[data-testid="stSidebar"] {
+    border-right: 1px solid #E4E7EB;
+}
+
+[data-testid="column"] {
+    padding-left: 0.30rem;
+    padding-right: 0.30rem;
+}
+
+div[data-testid="stImage"] {
+    overflow: visible !important;
+}
+
+div[data-testid="stImage"] img {
+    object-fit: contain !important;
+    max-width: 100% !important;
+    height: auto !important;
+}
+
+/* ==========================================================
+   RESPONSIVIDADE
+   ========================================================== */
+
+@media (max-width: 1200px) {
+
+    .titulo-principal {
+        font-size: 23px;
     }
 
     .instituicao {
-        width: 100%;
-        text-align: center;
-        color: #173B6C;
-        font-size: 14px;
-        line-height: 1.4;
-        font-weight: 800;
-        letter-spacing: 0.25px;
-        white-space: normal;
-        overflow: visible;
-        margin: 0 0 4px 0;
-        padding: 0;
+        font-size: 13px;
     }
 
     .curso {
-        width: 100%;
-        text-align: center;
-        color: #5d6875;
-        font-size: 12px;
-        line-height: 1.45;
-        font-weight: 600;
-        white-space: normal;
-        overflow: visible;
-        margin: 0 0 13px 0;
-        padding: 0 8px;
-    }
-
-    .titulo-principal {
-        width: 100%;
-        text-align: center;
-        font-size: 27px;
-        line-height: 1.22;
-        font-weight: 800;
-        color: #173B6C;
-        white-space: normal;
-        overflow: visible;
-        word-break: normal;
-        margin: 0 auto 8px auto;
-        padding: 0 8px;
+        font-size: 11px;
     }
 
     .subtitulo {
-        width: 100%;
-        text-align: center;
-        font-size: 14px;
-        line-height: 1.45;
-        color: #5c6673;
-        white-space: normal;
-        overflow: visible;
-        margin: 0;
-        padding: 0 8px;
-    }
-
-    /* ------------------------------------------------------
-       DEMAIS ELEMENTOS
-       ------------------------------------------------------ */
-
-    .titulo-secao {
-        font-size: 23px;
-        font-weight: 800;
-        color: #173B6C;
-        margin-top: 34px;
-        margin-bottom: 5px;
-        border-bottom: 2px solid #e6e9ed;
-        padding-bottom: 7px;
-    }
-
-    .descricao-secao {
-        color: #68727d;
-        font-size: 13px;
-        margin-bottom: 16px;
-    }
-
-    div[data-testid="stMetric"] {
-        background: white;
-        border: 1px solid #e2e6eb;
-        border-radius: 12px;
-        padding: 12px 14px;
-        min-height: 105px;
-        box-shadow: 0 1px 3px rgba(0,0,0,.04);
-    }
-
-    div[data-testid="stMetricLabel"] {
         font-size: 13px;
     }
+}
 
-    div[data-testid="stMetricValue"] {
-        font-size: 27px;
-        font-weight: 750;
-        color: #173B6C;
-    }
-
-    [data-testid="stSidebar"] {
-        border-right: 1px solid #e4e7eb;
-    }
-
-    [data-testid="column"] {
-        padding-left: 0.35rem;
-        padding-right: 0.35rem;
-    }
-
-    /* Evita corte das imagens do cabeçalho */
-    div[data-testid="stImage"] {
-        overflow: visible;
-    }
-
-    div[data-testid="stImage"] img {
-        object-fit: contain;
-        max-width: 100%;
-        height: auto;
-    }
-
-    /* Ajustes para telas menores */
-    @media (max-width: 1200px) {
-
-        .titulo-principal {
-            font-size: 23px;
-        }
-
-        .instituicao {
-            font-size: 13px;
-        }
-
-        .curso {
-            font-size: 11px;
-        }
-
-        .subtitulo {
-            font-size: 13px;
-        }
-    }
-
-    </style>
-    """,
+</style>
+""",
     unsafe_allow_html=True,
 )
+
 
 # ============================================================
 # 3. FUNÇÕES AUXILIARES
@@ -1002,27 +1006,23 @@ except Exception as erro:
 
 
 # ============================================================
-# 6. CABEÇALHO — VERSÃO CORRIGIDA
+# 6. CABEÇALHO — CORRIGIDO
 # ============================================================
 
-st.markdown(
-    '<div class="cabecalho-institucional">',
-    unsafe_allow_html=True,
+cab_logo_upe, cab_centro, cab_logo_cdia = st.columns(
+    [1.35, 7.30, 1.35],
+    gap="large",
 )
 
-cab_logo_upe, cab_centro, cab_logo_cdia = st.columns(
-    [1.35, 7.3, 1.35],
-    gap="medium",
-)
 
 with cab_logo_upe:
 
-    st.write("")
+    st.markdown(
+        '<div class="header-spacer"></div>',
+        unsafe_allow_html=True,
+    )
 
-    if os.path.exists(
-        "logo_upe.png"
-    ):
-
+    if os.path.exists("logo_upe.png"):
         st.image(
             "logo_upe.png",
             use_container_width=True,
@@ -1031,44 +1031,41 @@ with cab_logo_upe:
 
 with cab_centro:
 
+    html_cabecalho = (
+        '<div style="width:100%;text-align:center;padding:6px 0 10px 0;'
+        'margin:0;overflow:visible;">'
+        '<div class="instituicao">'
+        'UNIVERSIDADE DE PERNAMBUCO — UPE · CAMPUS CARUARU'
+        '</div>'
+        '<div class="curso">'
+        'PÓS-GRADUAÇÃO EM CIÊNCIA DE DADOS E INTELIGÊNCIA ARTIFICIAL '
+        'APLICADA À SAÚDE · VISUALIZAÇÃO DE DADOS'
+        '</div>'
+        '<div class="titulo-principal">'
+        'CENÁRIO EPIDEMIOLÓGICO DE AUTOLESÕES EM ADOLESCENTES '
+        'EM PERNAMBUCO<br>DE 2014–2024'
+        '</div>'
+        '<div class="subtitulo">'
+        'Notificações de lesão autoprovocada em adolescentes de '
+        '10 a 19 anos residentes em Pernambuco'
+        '</div>'
+        '</div>'
+    )
+
     st.markdown(
-        """
-        <div class="cabecalho-centro">
-
-            <div class="instituicao">
-                UNIVERSIDADE DE PERNAMBUCO — UPE · CAMPUS CARUARU
-            </div>
-
-            <div class="curso">
-                PÓS-GRADUAÇÃO EM CIÊNCIA DE DADOS E INTELIGÊNCIA ARTIFICIAL
-                APLICADA À SAÚDE · VISUALIZAÇÃO DE DADOS
-            </div>
-
-            <div class="titulo-principal">
-                CENÁRIO EPIDEMIOLÓGICO DE AUTOLESÕES EM ADOLESCENTES
-                EM PERNAMBUCO<br>
-                DE 2014–2024
-            </div>
-
-            <div class="subtitulo">
-                Notificações de lesão autoprovocada em adolescentes de
-                10 a 19 anos residentes em Pernambuco
-            </div>
-
-        </div>
-        """,
+        html_cabecalho,
         unsafe_allow_html=True,
     )
 
 
 with cab_logo_cdia:
 
-    st.write("")
+    st.markdown(
+        '<div style="height:18px"></div>',
+        unsafe_allow_html=True,
+    )
 
-    if os.path.exists(
-        "logo_cdia_saude.png"
-    ):
-
+    if os.path.exists("logo_cdia_saude.png"):
         st.image(
             "logo_cdia_saude.png",
             use_container_width=True,
@@ -1076,7 +1073,7 @@ with cab_logo_cdia:
 
 
 st.markdown(
-    "</div>",
+    '<div class="header-bottom-space"></div>',
     unsafe_allow_html=True,
 )
 
@@ -1339,9 +1336,7 @@ if metodos_selecionados:
 # 9. POPULAÇÃO COMPATÍVEL
 # ============================================================
 
-pop_f = (
-    pop.copy()
-)
+pop_f = pop.copy()
 
 if anos:
 
@@ -1404,14 +1399,10 @@ if sexos:
     codigos_sexo = []
 
     if "Masculino" in sexos:
-        codigos_sexo.append(
-            1
-        )
+        codigos_sexo.append(1)
 
     if "Feminino" in sexos:
-        codigos_sexo.append(
-            2
-        )
+        codigos_sexo.append(2)
 
     pop_f = pop_f.loc[
         pop_f[
@@ -1543,9 +1534,7 @@ titulo_secao(
     "Síntese epidemiológica da seleção atual.",
 )
 
-total = len(
-    dados
-)
+total = len(dados)
 
 if not filtro_sem_denominador:
 
@@ -1594,9 +1583,7 @@ pct_15_19 = (
     )
     .mean()
     * 100
-    if len(
-        dados
-    )
+    if len(dados)
     else np.nan
 )
 
@@ -1623,9 +1610,7 @@ k1, k2, k3, k4, k5 = (
 
 k1.metric(
     "Notificações",
-    numero_br(
-        total
-    ),
+    numero_br(total),
 )
 
 k2.metric(
@@ -1658,19 +1643,17 @@ k5.metric(
 )
 
 st.caption(
-    "* Percentuais de sexo e recorrência "
-    "calculados somente entre registros "
-    "válidos da respectiva variável."
+    "* Percentuais de sexo e recorrência calculados somente "
+    "entre registros válidos da respectiva variável."
 )
 
 if filtro_sem_denominador:
 
     st.info(
-        "A taxa populacional não é apresentada "
-        "para esta seleção porque há filtro de "
-        "raça/cor, escolaridade, recorrência ou "
-        "método, dimensões sem denominadores "
-        "correspondentes na base populacional."
+        "A taxa populacional não é apresentada para esta seleção "
+        "porque há filtro de raça/cor, escolaridade, recorrência "
+        "ou método, dimensões sem denominadores correspondentes "
+        "na base populacional."
     )
 
 
@@ -1789,16 +1772,12 @@ if not filtro_sem_denominador:
     )
 
     fig_tempo.update_yaxes(
-        title_text=(
-            "Número de notificações"
-        ),
+        title_text="Número de notificações",
         secondary_y=False,
     )
 
     fig_tempo.update_yaxes(
-        title_text=(
-            "Taxa por 100 mil"
-        ),
+        title_text="Taxa por 100 mil",
         secondary_y=True,
     )
 
@@ -1838,9 +1817,7 @@ else:
             "na seleção atual"
         ),
         xaxis_title="Ano",
-        yaxis_title=(
-            "Número de notificações"
-        ),
+        yaxis_title="Número de notificações",
         showlegend=False,
     )
 
@@ -1895,9 +1872,7 @@ if not raca_ano.empty:
 
     fig_raca_tempo.update_layout(
         xaxis_title="Ano",
-        yaxis_title=(
-            "Número de notificações"
-        ),
+        yaxis_title="Número de notificações",
         legend_title="Raça/cor",
         legend=dict(
             orientation="h",
@@ -1996,9 +1971,8 @@ else:
     )
 
     st.info(
-        "O território está sendo apresentado "
-        "em números absolutos porque a seleção "
-        "contém dimensão sem denominador "
+        "O território está sendo apresentado em números absolutos "
+        "porque a seleção contém dimensão sem denominador "
         "populacional correspondente."
     )
 
@@ -2215,17 +2189,13 @@ if (
     )
 
     fig_rank.update_traces(
-        texttemplate=(
-            "%{text:.1f}"
-        ),
+        texttemplate="%{text:.1f}",
         textposition="outside",
         cliponaxis=False,
     )
 
     fig_rank.update_layout(
-        xaxis_title=(
-            "Taxa por 100 mil"
-        ),
+        xaxis_title="Taxa por 100 mil",
         yaxis_title="",
         coloraxis_showscale=False,
     )
@@ -2266,9 +2236,7 @@ else:
     )
 
     fig_rank.update_layout(
-        xaxis_title=(
-            "Número de notificações"
-        ),
+        xaxis_title="Número de notificações",
         yaxis_title="",
         coloraxis_showscale=False,
     )
@@ -2358,9 +2326,7 @@ if not regiao.empty:
     )
 
     fig_regiao.update_layout(
-        xaxis_title=(
-            "Número de notificações"
-        ),
+        xaxis_title="Número de notificações",
         yaxis_title="",
         coloraxis_showscale=False,
     )
@@ -2447,9 +2413,7 @@ with perfil1:
 
     fig_sexo.update_traces(
         textposition="inside",
-        textinfo=(
-            "percent+label"
-        ),
+        textinfo="percent+label",
         hovertemplate=(
             "<b>%{label}</b><br>"
             "Notificações: %{value:,.0f}<br>"
@@ -2527,9 +2491,7 @@ with perfil2:
 
     fig_faixa.update_traces(
         textposition="inside",
-        textinfo=(
-            "percent+label"
-        ),
+        textinfo="percent+label",
         hovertemplate=(
             "<b>%{label}</b><br>"
             "Notificações: %{value:,.0f}<br>"
@@ -2650,9 +2612,7 @@ with perfil3:
     )
 
     fig_raca.update_layout(
-        xaxis_title=(
-            "Número de notificações"
-        ),
+        xaxis_title="Número de notificações",
         yaxis_title="",
         showlegend=False,
     )
@@ -2761,9 +2721,7 @@ with perfil4:
     )
 
     fig_esc.update_layout(
-        xaxis_title=(
-            "Número de notificações"
-        ),
+        xaxis_title="Número de notificações",
         yaxis_title="",
         coloraxis_showscale=False,
     )
@@ -2868,9 +2826,7 @@ with car1:
         )
 
         fig_metodo.update_layout(
-            xaxis_title=(
-                "Número de marcações"
-            ),
+            xaxis_title="Número de marcações",
             yaxis_title="",
             coloraxis_showscale=False,
         )
@@ -3023,14 +2979,10 @@ with car3:
 
     fig_n_metodos = px.pie(
         metodos_n_plot,
-        names=(
-            "Quantidade de métodos"
-        ),
+        names="Quantidade de métodos",
         values="Notificações",
         hole=0.52,
-        color=(
-            "Quantidade de métodos"
-        ),
+        color="Quantidade de métodos",
         color_discrete_map={
             "1 método":
             AZUL2,
@@ -3040,8 +2992,8 @@ with car3:
             "#A61B29",
         },
         title=(
-            "Número de métodos<br>"
-            "na mesma notificação"
+            "Distribuição das notificações segundo o "
+            "número de métodos registrados"
         ),
     )
 
@@ -3075,7 +3027,7 @@ with car3:
         altura=470,
         margem_esquerda=10,
         margem_direita=10,
-        margem_superior=95,
+        margem_superior=115,
         margem_inferior=90,
     )
 
@@ -3091,8 +3043,8 @@ with car3:
     st.caption(
         f"N válido = "
         f"{numero_br(total_metodo_valido)}. "
-        "Quantidade de métodos registrados "
-        "em uma mesma notificação."
+        "Cada categoria representa quantos métodos foram "
+        "registrados em uma mesma notificação."
     )
 
 
@@ -3398,10 +3350,10 @@ titulo_secao(
     "ao longo do período.",
 )
 
-# O gráfico "Completude das principais variáveis"
-# foi removido conforme solicitado.
-#
-# Permanece apenas a análise temporal da completude.
+# O gráfico geral "Completude das principais variáveis"
+# foi removido.
+# Permanece apenas a avaliação da completude segundo ano.
+
 
 linhas_qualidade = []
 
@@ -3547,9 +3499,7 @@ if not comp_ano.empty:
                 matriz_comp.values,
                 1,
             ),
-            texttemplate=(
-                "%{text}%"
-            ),
+            texttemplate="%{text}%",
             hovertemplate=(
                 "Ano: %{x}<br>"
                 "Variável: %{y}<br>"
@@ -3557,9 +3507,7 @@ if not comp_ano.empty:
                 "<extra></extra>"
             ),
             colorbar=dict(
-                title=(
-                    "Completude (%)"
-                )
+                title="Completude (%)"
             ),
         )
     )
@@ -3649,13 +3597,16 @@ As demais categorias válidas foram preservadas.
 Método é uma variável de resposta múltipla. Uma mesma
 notificação pode possuir mais de um método marcado.
 
-No gráfico referente ao número de métodos registrados na
-mesma notificação, são consideradas apenas notificações com
-pelo menos um método informado, agrupadas em:
+No gráfico referente à distribuição das notificações segundo
+o número de métodos registrados, são consideradas apenas
+notificações com pelo menos um método informado, agrupadas em:
 
 - **1 método**
 - **2 métodos**
 - **3 ou mais métodos**
+
+Essas categorias representam a quantidade de métodos
+registrados **em uma mesma notificação**.
 
 O gráfico **Métodos utilizados**, por sua vez, mostra quais
 métodos foram marcados. Como há possibilidade de resposta
