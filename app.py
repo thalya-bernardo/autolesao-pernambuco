@@ -5,6 +5,7 @@
 
 import os
 import re
+import base64
 import zipfile
 import tempfile
 import warnings
@@ -118,8 +119,8 @@ st.markdown(
 <style>
 
 .block-container {
-    max-width: 1800px;
-    padding-top: 1.4rem;
+    max-width: 1900px;
+    padding-top: 1.1rem;
     padding-left: 2rem;
     padding-right: 2rem;
     padding-bottom: 4rem;
@@ -129,8 +130,29 @@ st.markdown(
    CABEÇALHO
    ========================================================== */
 
-.header-spacer {
-    height: 8px;
+.header-logo-box {
+    width: 100%;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
+}
+
+.header-logo-box img {
+    width: 105px !important;
+    height: 105px !important;
+    object-fit: contain !important;
+    display: block;
+    margin: 0 auto;
+}
+
+.header-central {
+    width: 100%;
+    text-align: center;
+    padding: 2px 0 8px 0;
+    margin: 0;
+    overflow: visible;
 }
 
 .instituicao {
@@ -138,11 +160,11 @@ st.markdown(
     text-align: center;
     color: #173B6C;
     font-family: Arial, sans-serif;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 800;
-    line-height: 1.35;
-    letter-spacing: 0.2px;
-    margin: 0 0 6px 0;
+    line-height: 1.25;
+    margin: 0 0 4px 0;
+    white-space: nowrap;
 }
 
 .curso {
@@ -150,39 +172,41 @@ st.markdown(
     text-align: center;
     color: #5D6875;
     font-family: Arial, sans-serif;
-    font-size: 12px;
+    font-size: 10.5px;
     font-weight: 600;
-    line-height: 1.4;
-    margin: 0 0 15px 0;
+    line-height: 1.25;
+    margin: 0 0 12px 0;
+    white-space: nowrap;
 }
 
 .titulo-principal {
     width: 100%;
-    max-width: 1150px;
     text-align: center;
     color: #173B6C;
     font-family: Arial, sans-serif;
-    font-size: 27px;
+    font-size: clamp(15px, 1.45vw, 25px);
     font-weight: 800;
-    line-height: 1.20;
+    line-height: 1.15;
+    letter-spacing: -0.15px;
     margin: 0 auto 10px auto;
-    word-break: normal;
-    overflow-wrap: normal;
+    white-space: nowrap;
+    overflow: visible;
 }
 
 .subtitulo {
     width: 100%;
+    max-width: 1350px;
     text-align: center;
     color: #5C6673;
     font-family: Arial, sans-serif;
-    font-size: 14px;
+    font-size: 11.5px;
     font-weight: 400;
-    line-height: 1.4;
-    margin: 0;
+    line-height: 1.35;
+    margin: 0 auto;
 }
 
 .header-bottom-space {
-    height: 20px;
+    height: 18px;
 }
 
 /* ==========================================================
@@ -229,7 +253,7 @@ div[data-testid="stMetricValue"] {
 }
 
 /* ==========================================================
-   SIDEBAR / COLUNAS / IMAGENS
+   SIDEBAR E COLUNAS
    ========================================================== */
 
 [data-testid="stSidebar"] {
@@ -241,36 +265,35 @@ div[data-testid="stMetricValue"] {
     padding-right: 0.30rem;
 }
 
-div[data-testid="stImage"] {
-    overflow: visible !important;
-}
-
-div[data-testid="stImage"] img {
-    object-fit: contain !important;
-    max-width: 100% !important;
-    height: auto !important;
-}
-
 /* ==========================================================
    RESPONSIVIDADE
    ========================================================== */
 
-@media (max-width: 1200px) {
+@media (max-width: 1500px) {
 
     .titulo-principal {
-        font-size: 23px;
+        font-size: 17px;
     }
 
     .instituicao {
-        font-size: 13px;
+        font-size: 10.5px;
     }
 
     .curso {
-        font-size: 11px;
+        font-size: 9px;
     }
 
     .subtitulo {
-        font-size: 13px;
+        font-size: 10.5px;
+    }
+
+    .header-logo-box {
+        height: 105px;
+    }
+
+    .header-logo-box img {
+        width: 90px !important;
+        height: 90px !important;
     }
 }
 
@@ -576,7 +599,6 @@ def criar_metodos_long(base):
             continue
 
         temp["METODO"] = descricao
-
         partes.append(temp)
 
     if not partes:
@@ -604,6 +626,27 @@ def limpar_filtros():
 
     for chave in chaves:
         st.session_state[chave] = []
+
+
+def imagem_base64(caminho):
+    if not os.path.exists(caminho):
+        return None
+
+    with open(caminho, "rb") as arquivo:
+        dados_imagem = base64.b64encode(
+            arquivo.read()
+        ).decode("utf-8")
+
+    extensao = os.path.splitext(caminho)[1].lower()
+
+    if extensao == ".png":
+        mime = "image/png"
+    elif extensao in [".jpg", ".jpeg"]:
+        mime = "image/jpeg"
+    else:
+        mime = "image/png"
+
+    return f"data:{mime};base64,{dados_imagem}"
 
 
 # ============================================================
@@ -1006,49 +1049,63 @@ except Exception as erro:
 
 
 # ============================================================
-# 6. CABEÇALHO — CORRIGIDO
+# 6. CABEÇALHO
 # ============================================================
 
+logo_upe_b64 = imagem_base64(
+    "logo_upe.png"
+)
+
+logo_cdia_b64 = imagem_base64(
+    "logo_cdia_saude.png"
+)
+
+
 cab_logo_upe, cab_centro, cab_logo_cdia = st.columns(
-    [1.35, 7.30, 1.35],
-    gap="large",
+    [1.05, 8.90, 1.05],
+    gap="small",
 )
 
 
 with cab_logo_upe:
 
-    st.markdown(
-        '<div class="header-spacer"></div>',
-        unsafe_allow_html=True,
-    )
+    if logo_upe_b64:
 
-    if os.path.exists("logo_upe.png"):
-        st.image(
-            "logo_upe.png",
-            use_container_width=True,
+        st.markdown(
+            (
+                '<div class="header-logo-box">'
+                f'<img src="{logo_upe_b64}" '
+                'alt="Universidade de Pernambuco">'
+                '</div>'
+            ),
+            unsafe_allow_html=True,
         )
 
 
 with cab_centro:
 
     html_cabecalho = (
-        '<div style="width:100%;text-align:center;padding:6px 0 10px 0;'
-        'margin:0;overflow:visible;">'
+        '<div class="header-central">'
+
         '<div class="instituicao">'
         'UNIVERSIDADE DE PERNAMBUCO — UPE · CAMPUS CARUARU'
         '</div>'
+
         '<div class="curso">'
         'PÓS-GRADUAÇÃO EM CIÊNCIA DE DADOS E INTELIGÊNCIA ARTIFICIAL '
-        'APLICADA À SAÚDE · VISUALIZAÇÃO DE DADOS'
+        'APLICADA À SAÚDE'
         '</div>'
+
         '<div class="titulo-principal">'
-        'CENÁRIO EPIDEMIOLÓGICO DE AUTOLESÕES EM ADOLESCENTES '
-        'EM PERNAMBUCO<br>DE 2014–2024'
+        'CENÁRIO EPIDEMIOLÓGICO DE AUTOLESÕES EM ADOLESCENTES EM PERNAMBUCO DE 2014–2024'
         '</div>'
+
         '<div class="subtitulo">'
-        'Notificações de lesão autoprovocada em adolescentes de '
-        '10 a 19 anos residentes em Pernambuco'
+        'Notificações de lesão autoprovocada em adolescentes de 10 a 19 anos '
+        'residentes em Pernambuco coletadas no banco de dados do SINAN e dados '
+        'das estimativas populacionais do IBGE, ambos disponibilizados pelo DATASUS'
         '</div>'
+
         '</div>'
     )
 
@@ -1060,15 +1117,16 @@ with cab_centro:
 
 with cab_logo_cdia:
 
-    st.markdown(
-        '<div style="height:18px"></div>',
-        unsafe_allow_html=True,
-    )
+    if logo_cdia_b64:
 
-    if os.path.exists("logo_cdia_saude.png"):
-        st.image(
-            "logo_cdia_saude.png",
-            use_container_width=True,
+        st.markdown(
+            (
+                '<div class="header-logo-box">'
+                f'<img src="{logo_cdia_b64}" '
+                'alt="CDIA Saúde">'
+                '</div>'
+            ),
+            unsafe_allow_html=True,
         )
 
 
@@ -3351,9 +3409,7 @@ titulo_secao(
 )
 
 # O gráfico geral "Completude das principais variáveis"
-# foi removido.
-# Permanece apenas a avaliação da completude segundo ano.
-
+# permanece removido.
 
 linhas_qualidade = []
 
@@ -3562,7 +3618,8 @@ Notificações de lesão autoprovocada entre adolescentes de
 ### Fonte
 
 Sistema de Informação de Agravos de Notificação (SINAN) e
-base populacional utilizada no estudo.
+estimativas populacionais do Instituto Brasileiro de Geografia
+e Estatística (IBGE), disponibilizados pelo DATASUS.
 
 ### Universo validado
 
@@ -3748,6 +3805,7 @@ st.divider()
 
 st.caption(
     "Fonte: Sistema de Informação de Agravos de Notificação "
-    "(SINAN) e base populacional utilizada no estudo. "
+    "(SINAN) e estimativas populacionais do Instituto Brasileiro "
+    "de Geografia e Estatística (IBGE), disponibilizados pelo DATASUS. "
     "Elaboração própria."
 )
