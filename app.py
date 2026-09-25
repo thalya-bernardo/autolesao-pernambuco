@@ -1378,7 +1378,7 @@ with cab_centro:
         # Pós-graduação
         '<div class="curso">'
         'PÓS-GRADUAÇÃO EM CIÊNCIA DE DADOS E INTELIGÊNCIA ARTIFICIAL '
-        'APLICADA À SAÚDE · VISUALIZAÇÃO DE DADOS'
+        'APLICADA À SAÚDE'
         '</div>'
 
         # Título em duas linhas
@@ -3661,8 +3661,7 @@ with car3:
         },
 
         title=(
-            "Distribuição das notificações segundo o "
-            "número de métodos registrados"
+            "Distribuição dos métodos na mesma notificação"
         ),
     )
 
