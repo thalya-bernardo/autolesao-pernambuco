@@ -1891,7 +1891,7 @@ metodos_long = (
 # ============================================================
 
 titulo_secao(
-    "Visão geral",
+    "VISÃO GERAL",
     "Síntese dos principais achados da pesquisa, destacando os resultados "
     "que mais se sobressaíram na análise epidemiológica.",
 )
