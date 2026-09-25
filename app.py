@@ -44,8 +44,6 @@ IDADE_15_19 = "#E9A23B"
 REC_SIM = "#D95F02"
 REC_NAO = "#4C78A8"
 
-CINZA = "#8B95A5"
-
 ESCALA_MAGNITUDE = [
     [0.00, "#FFF4D6"],
     [0.25, "#FDCB6E"],
@@ -119,43 +117,84 @@ st.markdown(
 
     .block-container {
         max-width: 1800px;
-        padding-top: 1rem;
+        padding-top: 1.2rem;
         padding-left: 2rem;
         padding-right: 2rem;
         padding-bottom: 4rem;
     }
 
+    /* ------------------------------------------------------
+       CABEÇALHO
+       ------------------------------------------------------ */
+
+    .cabecalho-institucional {
+        width: 100%;
+        padding: 0.5rem 0 1.8rem 0;
+        margin-bottom: 0.6rem;
+    }
+
+    .cabecalho-centro {
+        width: 100%;
+        text-align: center;
+        overflow: visible;
+    }
+
     .instituicao {
+        width: 100%;
         text-align: center;
         color: #173B6C;
-        font-size: 13px;
-        font-weight: 700;
-        letter-spacing: .25px;
-        margin-bottom: 3px;
+        font-size: 14px;
+        line-height: 1.4;
+        font-weight: 800;
+        letter-spacing: 0.25px;
+        white-space: normal;
+        overflow: visible;
+        margin: 0 0 4px 0;
+        padding: 0;
     }
 
     .curso {
+        width: 100%;
         text-align: center;
         color: #5d6875;
         font-size: 12px;
-        margin-bottom: 12px;
+        line-height: 1.45;
+        font-weight: 600;
+        white-space: normal;
+        overflow: visible;
+        margin: 0 0 13px 0;
+        padding: 0 8px;
     }
 
     .titulo-principal {
+        width: 100%;
         text-align: center;
-        font-size: 28px;
-        line-height: 1.25;
+        font-size: 27px;
+        line-height: 1.22;
         font-weight: 800;
         color: #173B6C;
-        margin: 5px 0 3px 0;
+        white-space: normal;
+        overflow: visible;
+        word-break: normal;
+        margin: 0 auto 8px auto;
+        padding: 0 8px;
     }
 
     .subtitulo {
+        width: 100%;
         text-align: center;
         font-size: 14px;
+        line-height: 1.45;
         color: #5c6673;
-        margin-bottom: 18px;
+        white-space: normal;
+        overflow: visible;
+        margin: 0;
+        padding: 0 8px;
     }
+
+    /* ------------------------------------------------------
+       DEMAIS ELEMENTOS
+       ------------------------------------------------------ */
 
     .titulo-secao {
         font-size: 23px;
@@ -196,10 +235,40 @@ st.markdown(
         border-right: 1px solid #e4e7eb;
     }
 
-    /* Evita que componentes fiquem visualmente colados */
     [data-testid="column"] {
         padding-left: 0.35rem;
         padding-right: 0.35rem;
+    }
+
+    /* Evita corte das imagens do cabeçalho */
+    div[data-testid="stImage"] {
+        overflow: visible;
+    }
+
+    div[data-testid="stImage"] img {
+        object-fit: contain;
+        max-width: 100%;
+        height: auto;
+    }
+
+    /* Ajustes para telas menores */
+    @media (max-width: 1200px) {
+
+        .titulo-principal {
+            font-size: 23px;
+        }
+
+        .instituicao {
+            font-size: 13px;
+        }
+
+        .curso {
+            font-size: 11px;
+        }
+
+        .subtitulo {
+            font-size: 13px;
+        }
     }
 
     </style>
@@ -388,11 +457,6 @@ def estilo_figura(
     margem_superior=85,
     margem_inferior=55,
 ):
-    """
-    Padroniza os gráficos e reserva espaço para títulos,
-    rótulos dos eixos e textos longos.
-    """
-
     fig.update_layout(
         height=altura,
         autosize=True,
@@ -476,10 +540,7 @@ def cramer_v(tabela):
         r - 1,
     )
 
-    if (
-        n > 0
-        and denominador > 0
-    ):
+    if n > 0 and denominador > 0:
         v = sqrt(
             chi2
             / (
@@ -941,14 +1002,22 @@ except Exception as erro:
 
 
 # ============================================================
-# 6. CABEÇALHO
+# 6. CABEÇALHO — VERSÃO CORRIGIDA
 # ============================================================
 
-cab1, cab2, cab3 = st.columns(
-    [1, 5, 1]
+st.markdown(
+    '<div class="cabecalho-institucional">',
+    unsafe_allow_html=True,
 )
 
-with cab1:
+cab_logo_upe, cab_centro, cab_logo_cdia = st.columns(
+    [1.35, 7.3, 1.35],
+    gap="medium",
+)
+
+with cab_logo_upe:
+
+    st.write("")
 
     if os.path.exists(
         "logo_upe.png"
@@ -956,38 +1025,45 @@ with cab1:
 
         st.image(
             "logo_upe.png",
-            width=125,
+            use_container_width=True,
         )
 
 
-with cab2:
+with cab_centro:
 
     st.markdown(
         """
-        <div class="instituicao">
-        UNIVERSIDADE DE PERNAMBUCO — UPE · CAMPUS CARUARU
-        </div>
+        <div class="cabecalho-centro">
 
-        <div class="curso">
-        PÓS-GRADUAÇÃO EM CIÊNCIA DE DADOS E INTELIGÊNCIA
-        ARTIFICIAL APLICADA À SAÚDE · VISUALIZAÇÃO DE DADOS
-        </div>
+            <div class="instituicao">
+                UNIVERSIDADE DE PERNAMBUCO — UPE · CAMPUS CARUARU
+            </div>
 
-        <div class="titulo-principal">
-        CENÁRIO EPIDEMIOLÓGICO DE AUTOLESÕES EM ADOLESCENTES
-        EM PERNAMBUCO DE 2014–2024
-        </div>
+            <div class="curso">
+                PÓS-GRADUAÇÃO EM CIÊNCIA DE DADOS E INTELIGÊNCIA ARTIFICIAL
+                APLICADA À SAÚDE · VISUALIZAÇÃO DE DADOS
+            </div>
 
-        <div class="subtitulo">
-        Notificações de lesão autoprovocada em adolescentes
-        de 10 a 19 anos residentes em Pernambuco
+            <div class="titulo-principal">
+                CENÁRIO EPIDEMIOLÓGICO DE AUTOLESÕES EM ADOLESCENTES
+                EM PERNAMBUCO<br>
+                DE 2014–2024
+            </div>
+
+            <div class="subtitulo">
+                Notificações de lesão autoprovocada em adolescentes de
+                10 a 19 anos residentes em Pernambuco
+            </div>
+
         </div>
         """,
         unsafe_allow_html=True,
     )
 
 
-with cab3:
+with cab_logo_cdia:
+
+    st.write("")
 
     if os.path.exists(
         "logo_cdia_saude.png"
@@ -995,8 +1071,14 @@ with cab3:
 
         st.image(
             "logo_cdia_saude.png",
-            width=125,
+            use_container_width=True,
         )
+
+
+st.markdown(
+    "</div>",
+    unsafe_allow_html=True,
+)
 
 
 # ============================================================
@@ -1602,10 +1684,6 @@ titulo_secao(
     "segundo raça/cor ao longo do período.",
 )
 
-# ------------------------------------------------------------
-# PREPARAÇÃO DO GRÁFICO TEMPORAL
-# ------------------------------------------------------------
-
 serie = (
     dados
     .groupby(
@@ -1777,10 +1855,6 @@ estilo_figura(
 )
 
 
-# ------------------------------------------------------------
-# RAÇA/COR × ANO
-# ------------------------------------------------------------
-
 raca_ano = (
     dados_raca_valida
     .groupby(
@@ -1843,10 +1917,6 @@ if not raca_ano.empty:
         margem_inferior=65,
     )
 
-
-# ------------------------------------------------------------
-# DOIS GRÁFICOS NA MESMA LINHA — 50% / 50%
-# ------------------------------------------------------------
 
 tend1, tend2 = st.columns(
     2,
@@ -2049,10 +2119,6 @@ coluna_mapa = (
 )
 
 
-# ------------------------------------------------------------
-# MAPA
-# ------------------------------------------------------------
-
 hover = {
     "COD_MUN_6":
     False,
@@ -2109,10 +2175,6 @@ estilo_figura(
     margem_inferior=30,
 )
 
-
-# ------------------------------------------------------------
-# RANKING MUNICIPAL
-# ------------------------------------------------------------
 
 if (
     coluna_mapa
@@ -2227,10 +2289,6 @@ estilo_figura(
 )
 
 
-# ------------------------------------------------------------
-# MAPA E RANKING — 50% / 50%
-# ------------------------------------------------------------
-
 terr1, terr2 = st.columns(
     2,
     gap="medium",
@@ -2260,10 +2318,6 @@ with terr2:
         },
     )
 
-
-# ------------------------------------------------------------
-# REGIÕES DE SAÚDE
-# ------------------------------------------------------------
 
 regiao = (
     dados
@@ -2342,20 +2396,11 @@ titulo_secao(
 )
 
 
-# ============================================================
-# LINHA 1 — SEXO | FAIXA ETÁRIA
-# 50% / 50%
-# ============================================================
-
 perfil1, perfil2 = st.columns(
     2,
     gap="medium",
 )
 
-
-# ------------------------------------------------------------
-# SEXO
-# ------------------------------------------------------------
 
 with perfil1:
 
@@ -2441,10 +2486,6 @@ with perfil1:
     )
 
 
-# ------------------------------------------------------------
-# FAIXA ETÁRIA
-# ------------------------------------------------------------
-
 with perfil2:
 
     faixa_plot = (
@@ -2525,20 +2566,11 @@ with perfil2:
     )
 
 
-# ============================================================
-# LINHA 2 — RAÇA/COR | ESCOLARIDADE
-# 50% / 50%
-# ============================================================
-
 perfil3, perfil4 = st.columns(
     2,
     gap="medium",
 )
 
-
-# ------------------------------------------------------------
-# RAÇA/COR — ORDEM DECRESCENTE
-# ------------------------------------------------------------
 
 with perfil3:
 
@@ -2578,8 +2610,6 @@ with perfil3:
         0,
     )
 
-    # A lista explícita garante que a maior categoria
-    # apareça no topo do gráfico horizontal.
     ordem_raca = (
         raca_plot[
             "Raça/cor"
@@ -2650,10 +2680,6 @@ with perfil3:
         f"{numero_br(total_raca_valida)}."
     )
 
-
-# ------------------------------------------------------------
-# ESCOLARIDADE — ORDEM DECRESCENTE
-# ------------------------------------------------------------
 
 with perfil4:
 
@@ -2779,20 +2805,11 @@ titulo_secao(
 )
 
 
-# ------------------------------------------------------------
-# LAYOUT 50% | 25% | 25%
-# Métodos recebe mais espaço.
-# ------------------------------------------------------------
-
 car1, car2, car3 = st.columns(
     [2, 1, 1],
     gap="medium",
 )
 
-
-# ------------------------------------------------------------
-# MÉTODOS UTILIZADOS
-# ------------------------------------------------------------
 
 with car1:
 
@@ -2889,10 +2906,6 @@ with car1:
         )
 
 
-# ------------------------------------------------------------
-# RECORRÊNCIA — COMPACTO
-# ------------------------------------------------------------
-
 with car2:
 
     rec_plot = (
@@ -2981,10 +2994,6 @@ with car2:
         f"{numero_br(total_rec_valida)}."
     )
 
-
-# ------------------------------------------------------------
-# Nº DE MÉTODOS POR NOTIFICAÇÃO — COMPACTO
-# ------------------------------------------------------------
 
 with car3:
 
@@ -3385,162 +3394,14 @@ else:
 
 titulo_secao(
     "Qualidade dos dados",
-    "Completude das principais variáveis e sua "
-    "evolução ao longo do período.",
+    "Evolução da completude das principais variáveis "
+    "ao longo do período.",
 )
 
-
-qualidade = pd.DataFrame({
-
-    "Variável": [
-        "Sexo",
-        "Raça/cor",
-        "Escolaridade",
-        "Recorrência",
-        "Método",
-        "Município",
-        "Região de Saúde",
-    ],
-
-    "Completude (%)": [
-
-        completude_categoria(
-            dados,
-            "SEXO_DESC",
-            SEXO_VALIDO,
-        ),
-
-        completude_categoria(
-            dados,
-            "RACA_COR_DESC",
-            RACA_VALIDA,
-        ),
-
-        completude_categoria(
-            dados,
-            "ESCOLARIDADE_DESC",
-            ESCOLARIDADE_VALIDA,
-        ),
-
-        completude_categoria(
-            dados,
-            "RECORRENCIA_DESC",
-            RECORRENCIA_VALIDA,
-        ),
-
-        (
-            dados[
-                "N_METODOS"
-            ]
-            .ge(1)
-            .mean()
-            * 100
-            if len(
-                dados
-            )
-            else np.nan
-        ),
-
-        (
-            dados[
-                "MUNICÍPIO"
-            ]
-            .notna()
-            .mean()
-            * 100
-            if len(
-                dados
-            )
-            else np.nan
-        ),
-
-        (
-            dados[
-                "REGIÃO DE SAÚDE"
-            ]
-            .notna()
-            .mean()
-            * 100
-            if len(
-                dados
-            )
-            else np.nan
-        ),
-    ],
-})
-
-
-qualidade = (
-    qualidade
-    .sort_values(
-        "Completude (%)"
-    )
-)
-
-
-fig_qualidade = px.bar(
-    qualidade,
-    x="Completude (%)",
-    y="Variável",
-    orientation="h",
-    color="Completude (%)",
-    color_continuous_scale=[
-        "#E15759",
-        "#F28E2B",
-        "#FDCB6E",
-        "#59A14F",
-    ],
-    text="Completude (%)",
-    title=(
-        "Completude das principais variáveis"
-    ),
-    range_x=[
-        0,
-        100,
-    ],
-)
-
-
-fig_qualidade.update_traces(
-    texttemplate=(
-        "%{text:.1f}%"
-    ),
-    textposition="inside",
-)
-
-
-fig_qualidade.update_layout(
-    xaxis_title=(
-        "Completude (%)"
-    ),
-    yaxis_title="",
-    coloraxis_showscale=False,
-)
-
-
-estilo_figura(
-    fig_qualidade,
-    altura=450,
-    margem_esquerda=110,
-    margem_direita=40,
-    margem_superior=80,
-    margem_inferior=65,
-)
-
-
-st.plotly_chart(
-    fig_qualidade,
-    use_container_width=True,
-    config={
-        "responsive": True,
-        "displaylogo": False,
-    },
-)
-
-
-# ------------------------------------------------------------
-# COMPLETUDE POR ANO
-# ------------------------------------------------------------
+# O gráfico "Completude das principais variáveis"
+# foi removido conforme solicitado.
+#
+# Permanece apenas a análise temporal da completude.
 
 linhas_qualidade = []
 
