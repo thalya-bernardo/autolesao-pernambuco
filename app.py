@@ -118,10 +118,6 @@ st.markdown(
     """
 <style>
 
-/* ==========================================================
-   PÁGINA
-   ========================================================== */
-
 .block-container {
     max-width: 1900px;
     padding-top: 4.8rem !important;
@@ -137,7 +133,7 @@ st.markdown(
 
 .header-logo-box {
     width: 100%;
-    min-height: 155px;
+    min-height: 145px;
 
     display: flex;
     align-items: center;
@@ -159,7 +155,7 @@ st.markdown(
 
 .header-central {
     width: 100%;
-    min-height: 155px;
+    min-height: 145px;
 
     display: flex;
     flex-direction: column;
@@ -188,26 +184,7 @@ st.markdown(
 
     line-height: 1.25;
 
-    margin: 0 auto 4px auto;
-
-    white-space: nowrap;
-}
-
-
-.curso {
-    width: 100%;
-
-    text-align: center;
-
-    color: #5D6875;
-
-    font-family: Arial, sans-serif;
-    font-size: 11px;
-    font-weight: 600;
-
-    line-height: 1.30;
-
-    margin: 0 auto 13px auto;
+    margin: 0 auto 14px auto;
 
     white-space: nowrap;
 }
@@ -236,9 +213,7 @@ st.markdown(
 
 .titulo-linha {
     display: block;
-
     width: 100%;
-
     text-align: center;
 }
 
@@ -289,6 +264,8 @@ st.markdown(
     color: #68727D;
 
     font-size: 13px;
+
+    line-height: 1.45;
 
     margin-bottom: 16px;
 }
@@ -355,10 +332,6 @@ div[data-testid="stMetricValue"] {
         font-size: 11px;
     }
 
-    .curso {
-        font-size: 10px;
-    }
-
     .titulo-principal {
         font-size: 23px;
     }
@@ -369,11 +342,11 @@ div[data-testid="stMetricValue"] {
     }
 
     .header-logo-box {
-        min-height: 150px;
+        min-height: 140px;
     }
 
     .header-central {
-        min-height: 150px;
+        min-height: 140px;
     }
 
     .header-logo-box img {
@@ -385,8 +358,7 @@ div[data-testid="stMetricValue"] {
 
 @media (max-width: 1200px) {
 
-    .instituicao,
-    .curso {
+    .instituicao {
         white-space: normal;
     }
 
@@ -605,9 +577,7 @@ def agrupar_escolaridade(valor):
         "1ª a 4ª série incompleta do EF",
     ]:
 
-        return (
-            "Analfabeto a 4ª série incompleta do EF"
-        )
+        return "Analfabeto a 4ª série incompleta do EF"
 
     return valor
 
@@ -916,10 +886,6 @@ def carregar_dados():
         )
     ].copy()
 
-    # --------------------------------------------------------
-    # Validação do universo
-    # --------------------------------------------------------
-
     if len(sinan) != 12713:
 
         raise ValueError(
@@ -1192,10 +1158,6 @@ def carregar_dados():
         )
     ].copy()
 
-    # --------------------------------------------------------
-    # Identificação dos municípios / Regiões de Saúde
-    # --------------------------------------------------------
-
     municipios = (
         pop[
             [
@@ -1325,11 +1287,6 @@ logo_cdia_b64 = imagem_base64(
 )
 
 
-# ------------------------------------------------------------
-# Estrutura:
-# UPE | CONTEÚDO CENTRAL | CDIA
-# ------------------------------------------------------------
-
 cab_logo_upe, cab_centro, cab_logo_cdia = st.columns(
     [
         1.05,
@@ -1362,7 +1319,7 @@ with cab_logo_upe:
 
 
 # ------------------------------------------------------------
-# TEXTO CENTRAL
+# CONTEÚDO CENTRAL
 # ------------------------------------------------------------
 
 with cab_centro:
@@ -1370,18 +1327,10 @@ with cab_centro:
     html_cabecalho = (
         '<div class="header-central">'
 
-        # Instituição
         '<div class="instituicao">'
         'UNIVERSIDADE DE PERNAMBUCO — UPE · CAMPUS CARUARU'
         '</div>'
 
-        # Pós-graduação
-        '<div class="curso">'
-        'PÓS-GRADUAÇÃO EM CIÊNCIA DE DADOS E INTELIGÊNCIA ARTIFICIAL '
-        'APLICADA À SAÚDE'
-        '</div>'
-
-        # Título em duas linhas
         '<div class="titulo-principal">'
 
         '<span class="titulo-linha">'
@@ -1394,7 +1343,6 @@ with cab_centro:
 
         '</div>'
 
-        # Subtítulo
         '<div class="subtitulo">'
         'Notificações de lesão autoprovocada em adolescentes de 10 a 19 anos '
         'residentes em Pernambuco coletadas no banco de dados do SINAN e dados '
@@ -1944,7 +1892,8 @@ metodos_long = (
 
 titulo_secao(
     "Visão geral",
-    "Síntese epidemiológica da seleção atual.",
+    "Síntese dos principais achados da pesquisa, destacando os resultados "
+    "que mais se sobressaíram na análise epidemiológica.",
 )
 
 
@@ -2102,7 +2051,7 @@ if filtro_sem_denominador:
 # ============================================================
 
 titulo_secao(
-    "Tendência",
+    "EVOLUÇÃO TEMPORAL",
 
     "Evolução temporal das notificações e distribuição "
     "segundo raça/cor ao longo do período.",
@@ -2425,7 +2374,7 @@ with tend2:
 # ============================================================
 
 titulo_secao(
-    "Território",
+    "DISTRIBUIÇÃO TERRITORIAL",
 
     "Distribuição espacial das notificações entre "
     "municípios e Regiões de Saúde.",
@@ -2657,7 +2606,7 @@ estilo_figura(
 
 
 # ------------------------------------------------------------
-# Ranking municipal
+# Municípios em destaque
 # ------------------------------------------------------------
 
 if (
@@ -2701,7 +2650,8 @@ if (
         text="Taxa por 100 mil",
 
         title=(
-            "15 maiores taxas municipais"
+            "Municípios com as maiores taxas de notificação "
+            "de lesão autoprovocada em adolescentes"
         ),
     )
 
@@ -2712,7 +2662,7 @@ if (
     )
 
     fig_rank.update_layout(
-        xaxis_title="Taxa por 100 mil",
+        xaxis_title="Taxa por 100 mil adolescentes",
         yaxis_title="",
         coloraxis_showscale=False,
     )
@@ -2751,7 +2701,8 @@ else:
         text="Notificações",
 
         title=(
-            "15 maiores números de notificações"
+            "Municípios com maior número de notificações "
+            "de lesão autoprovocada em adolescentes"
         ),
     )
 
@@ -2779,7 +2730,7 @@ estilo_figura(
 
     margem_esquerda=120,
     margem_direita=70,
-    margem_superior=80,
+    margem_superior=105,
     margem_inferior=65,
 )
 
@@ -2901,7 +2852,7 @@ if not regiao.empty:
 # ============================================================
 
 titulo_secao(
-    "Perfil epidemiológico",
+    "PERFIL EPIDEMIOLÓGICO",
 
     "Distribuição das notificações segundo características "
     "sociodemográficas. As análises específicas utilizam "
@@ -2910,7 +2861,6 @@ titulo_secao(
 
 
 # ------------------------------------------------------------
-# LINHA 1
 # SEXO | FAIXA ETÁRIA
 # ------------------------------------------------------------
 
@@ -3107,7 +3057,6 @@ with perfil2:
 
 
 # ------------------------------------------------------------
-# LINHA 2
 # RAÇA/COR | ESCOLARIDADE
 # ------------------------------------------------------------
 
@@ -3372,15 +3321,13 @@ with perfil4:
 # ============================================================
 
 titulo_secao(
-    "Características da autolesão",
+    "CARACTERÍSTICAS DAS AUTOLESÕES",
 
     "Métodos registrados, ocorrência anterior/recorrência "
     "e número de métodos registrados em uma mesma notificação.",
 )
 
 
-# O gráfico de métodos recebe metade da linha.
-# Os dois gráficos de pizza recebem 1/4 cada.
 car1, car2, car3 = st.columns(
     [
         2,
@@ -3661,7 +3608,8 @@ with car3:
         },
 
         title=(
-            "Distribuição dos métodos na mesma notificação"
+            "Distribuição dos métodos<br>"
+            "na mesma notificação"
         ),
     )
 
@@ -3701,7 +3649,7 @@ with car3:
 
         margem_esquerda=10,
         margem_direita=10,
-        margem_superior=115,
+        margem_superior=100,
         margem_inferior=90,
     )
 
@@ -3729,10 +3677,12 @@ with car3:
 # ============================================================
 
 titulo_secao(
-    "Análise estatística",
+    "ANÁLISE ESTATÍSTICA",
 
-    "Associação entre características epidemiológicas "
-    "por meio do teste qui-quadrado e V de Cramér.",
+    "Associação entre características epidemiológicas por meio do teste "
+    "qui-quadrado e V de Cramér. Somente os registros válidos, com os "
+    "campos completos em ambas as variáveis selecionadas, são utilizados "
+    "no teste.",
 )
 
 
@@ -4029,9 +3979,8 @@ if (
             )
 
         st.caption(
-            "O teste utiliza somente registros "
-            "com respostas válidas simultaneamente "
-            "nas duas variáveis selecionadas."
+            "Somente os registros válidos, com os campos completos "
+            "em ambas as variáveis selecionadas, são utilizados no teste."
         )
 
     except ValueError:
@@ -4055,15 +4004,11 @@ else:
 # ============================================================
 
 titulo_secao(
-    "Qualidade dos dados",
+    "QUALIDADE DOS DADOS",
 
     "Evolução da completude das principais variáveis "
     "ao longo do período.",
 )
-
-
-# O gráfico geral "Completude das principais variáveis"
-# permanece removido.
 
 
 linhas_qualidade = []
@@ -4327,9 +4272,9 @@ As demais categorias válidas foram preservadas.
 Método é uma variável de resposta múltipla. Uma mesma
 notificação pode possuir mais de um método marcado.
 
-No gráfico referente à distribuição das notificações segundo
-o número de métodos registrados, são consideradas apenas
-notificações com pelo menos um método informado, agrupadas em:
+No gráfico **Distribuição dos métodos na mesma notificação**,
+são consideradas apenas notificações com pelo menos um método
+informado, agrupadas em:
 
 - **1 método**
 - **2 métodos**
@@ -4370,8 +4315,8 @@ entre variáveis categóricas.
 O **V de Cramér** é apresentado como medida da magnitude
 da associação.
 
-Somente registros válidos simultaneamente nas duas
-variáveis selecionadas são utilizados no teste.
+**Somente os registros válidos, com os campos completos em
+ambas as variáveis selecionadas, são utilizados no teste.**
 
 ### Interpretação epidemiológica
 
