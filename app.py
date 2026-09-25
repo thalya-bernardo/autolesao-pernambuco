@@ -32,7 +32,7 @@ st.set_page_config(
 )
 
 # ============================================================
-# 2. CORES
+# 2. PALETA VISUAL
 # ============================================================
 
 AZUL = "#173B6C"
@@ -60,8 +60,18 @@ CORES_RACA = {
     "Preta": "#4E4E4E",
     "Amarela": "#EDC948",
     "Indígena": "#B07AA1",
-    "Ignorado": CINZA,
-    "Não informado": "#BFC5CC",
+}
+
+CORES_ESCOLARIDADE = {
+    "Analfabeto": "#A61B29",
+    "1ª a 4ª série incompleta do EF": "#D95F02",
+    "4ª série completa do EF": "#F28E2B",
+    "5ª a 8ª série incompleta do EF": "#EDC948",
+    "Ensino fundamental completo": "#76B7B2",
+    "Ensino médio incompleto": "#4E79A7",
+    "Ensino médio completo": "#3E6FA8",
+    "Educação superior incompleta": "#7B6BA8",
+    "Educação superior completa": "#5B4B8A",
 }
 
 # ============================================================
@@ -109,6 +119,22 @@ st.markdown(
         margin-bottom:18px;
     }
 
+    .titulo-secao {
+        font-size:23px;
+        font-weight:800;
+        color:#173B6C;
+        margin-top:34px;
+        margin-bottom:5px;
+        border-bottom:2px solid #e6e9ed;
+        padding-bottom:7px;
+    }
+
+    .descricao-secao {
+        color:#68727d;
+        font-size:13px;
+        margin-bottom:16px;
+    }
+
     div[data-testid="stMetric"] {
         background:white;
         border:1px solid #e2e6eb;
@@ -128,15 +154,6 @@ st.markdown(
         color:#173B6C;
     }
 
-    div[data-testid="stTabs"] button {
-        font-weight:600;
-    }
-
-    .nota-metodo {
-        font-size:12px;
-        color:#626d78;
-    }
-
     [data-testid="stSidebar"] {
         border-right:1px solid #e4e7eb;
     }
@@ -153,9 +170,12 @@ def localizar_arquivo(opcoes):
     for nome in opcoes:
         if os.path.exists(nome):
             return nome
+
     raise FileNotFoundError(
-        "Nenhum destes arquivos foi encontrado: " + ", ".join(opcoes)
+        "Nenhum destes arquivos foi encontrado: "
+        + ", ".join(opcoes)
     )
+
 
 ARQUIVO_SINAN = localizar_arquivo([
     "BD_AUTOLESÃO_COMPLETO(1).xlsx",
@@ -176,8 +196,10 @@ ARQUIVO_MALHA = localizar_arquivo([
 # ============================================================
 
 def idade_em_anos(valor):
+
     if pd.isna(valor):
         return np.nan
+
     try:
         valor = int(float(valor))
     except Exception:
@@ -190,16 +212,20 @@ def idade_em_anos(valor):
 
 
 def codigo_municipio_6d(valor):
+
     if pd.isna(valor):
         return pd.NA
+
     try:
         return str(int(float(valor))).zfill(6)[:6]
+
     except Exception:
         texto = re.sub(r"\D", "", str(valor))
         return texto[:6] if len(texto) >= 6 else pd.NA
 
 
 def numero_br(valor, casas=0):
+
     if pd.isna(valor):
         return "—"
 
@@ -207,14 +233,25 @@ def numero_br(valor, casas=0):
         return f"{valor:,.0f}".replace(",", ".")
 
     texto = f"{valor:,.{casas}f}"
-    return texto.replace(",", "X").replace(".", ",").replace("X", ".")
+
+    return (
+        texto
+        .replace(",", "X")
+        .replace(".", ",")
+        .replace("X", ".")
+    )
 
 
 def percentual_br(valor, casas=1):
-    return "—" if pd.isna(valor) else f"{numero_br(valor, casas)}%"
+
+    if pd.isna(valor):
+        return "—"
+
+    return f"{numero_br(valor, casas)}%"
 
 
 def decodificar_sexo(valor):
+
     if pd.isna(valor):
         return "Não informado"
 
@@ -231,10 +268,12 @@ def decodificar_sexo(valor):
         "9": "Ignorado",
         "9.0": "Ignorado",
     }
+
     return mapa.get(texto, "Não informado")
 
 
 def decodificar_raca(valor):
+
     mapa = {
         1: "Branca",
         2: "Preta",
@@ -248,24 +287,36 @@ def decodificar_raca(valor):
         return "Não informado"
 
     try:
-        return mapa.get(int(float(valor)), "Não informado")
+        return mapa.get(
+            int(float(valor)),
+            "Não informado"
+        )
     except Exception:
         return "Não informado"
 
 
 def decodificar_recorrencia(valor):
-    mapa = {1: "Sim", 2: "Não", 9: "Ignorado"}
+
+    mapa = {
+        1: "Sim",
+        2: "Não",
+        9: "Ignorado",
+    }
 
     if pd.isna(valor):
         return "Não informado"
 
     try:
-        return mapa.get(int(float(valor)), "Não informado")
+        return mapa.get(
+            int(float(valor)),
+            "Não informado"
+        )
     except Exception:
         return "Não informado"
 
 
 def decodificar_escolaridade(valor):
+
     mapa = {
         0: "Analfabeto",
         1: "1ª a 4ª série incompleta do EF",
@@ -284,12 +335,16 @@ def decodificar_escolaridade(valor):
         return "Não informado"
 
     try:
-        return mapa.get(int(float(valor)), "Não informado")
+        return mapa.get(
+            int(float(valor)),
+            "Não informado"
+        )
     except Exception:
         return "Não informado"
 
 
 def ic95_taxa(n, populacao):
+
     if pd.isna(populacao) or populacao <= 0:
         return np.nan, np.nan
 
@@ -297,36 +352,45 @@ def ic95_taxa(n, populacao):
         return 0.0, 0.0
 
     erro = 1.96 * sqrt(n)
-    inferior_n = max(0, n - erro)
-    superior_n = n + erro
+
+    inferior = max(0, n - erro)
+    superior = n + erro
 
     return (
-        inferior_n / populacao * 100000,
-        superior_n / populacao * 100000,
+        inferior / populacao * 100000,
+        superior / populacao * 100000,
     )
 
 
 def razao_taxas(n1, p1, n0, p0):
+
     if min(n1, n0, p1, p0) <= 0:
         return np.nan, np.nan, np.nan
 
-    t1 = n1 / p1
-    t0 = n0 / p0
-    rt = t1 / t0
+    taxa1 = n1 / p1
+    taxa0 = n0 / p0
+
+    rt = taxa1 / taxa0
 
     se_log = sqrt((1 / n1) + (1 / n0))
 
-    li = np.exp(np.log(rt) - 1.96 * se_log)
-    ls = np.exp(np.log(rt) + 1.96 * se_log)
+    li = np.exp(
+        np.log(rt) - 1.96 * se_log
+    )
+
+    ls = np.exp(
+        np.log(rt) + 1.96 * se_log
+    )
 
     return rt, li, ls
 
 
 def cramer_v(tabela):
+
     try:
         from scipy.stats import chi2_contingency
 
-        chi2, p, dof, expected = chi2_contingency(tabela)
+        chi2, p, _, _ = chi2_contingency(tabela)
 
         n = tabela.to_numpy().sum()
         r, k = tabela.shape
@@ -336,14 +400,56 @@ def cramer_v(tabela):
         if n == 0 or denominador <= 0:
             return chi2, p, np.nan
 
-        v = sqrt(chi2 / (n * denominador))
+        v = sqrt(
+            chi2 / (n * denominador)
+        )
+
         return chi2, p, v
 
     except Exception:
         return np.nan, np.nan, np.nan
 
 
+def estilo_figura(fig, altura=430):
+
+    fig.update_layout(
+        height=altura,
+        paper_bgcolor="white",
+        plot_bgcolor="white",
+        margin=dict(
+            l=15,
+            r=15,
+            t=55,
+            b=20
+        ),
+        font=dict(
+            family="Arial",
+            size=12
+        ),
+        hoverlabel=dict(
+            font_size=12
+        ),
+    )
+
+    return fig
+
+
+def titulo_secao(titulo, descricao=None):
+
+    st.markdown(
+        f'<div class="titulo-secao">{titulo}</div>',
+        unsafe_allow_html=True
+    )
+
+    if descricao:
+        st.markdown(
+            f'<div class="descricao-secao">{descricao}</div>',
+            unsafe_allow_html=True
+        )
+
+
 def limpar_filtros():
+
     chaves = [
         "f_ano",
         "f_regiao",
@@ -361,22 +467,39 @@ def limpar_filtros():
         st.session_state[chave] = []
 
 
-def estilo_figura(fig, altura=430):
-    fig.update_layout(
-        height=altura,
-        paper_bgcolor="white",
-        plot_bgcolor="white",
-        margin=dict(l=15, r=15, t=55, b=20),
-        font=dict(family="Arial", size=12),
-        legend=dict(title=""),
-        hoverlabel=dict(font_size=12),
-    )
-    return fig
-
-
 # ============================================================
-# 6. MÉTODOS
+# 6. CATEGORIAS ANALITICAMENTE VÁLIDAS
 # ============================================================
+
+SEXO_VALIDO = [
+    "Feminino",
+    "Masculino",
+]
+
+RACA_VALIDA = [
+    "Parda",
+    "Branca",
+    "Preta",
+    "Amarela",
+    "Indígena",
+]
+
+RECORRENCIA_VALIDA = [
+    "Sim",
+    "Não",
+]
+
+ESCOLARIDADE_VALIDA = [
+    "Analfabeto",
+    "1ª a 4ª série incompleta do EF",
+    "4ª série completa do EF",
+    "5ª a 8ª série incompleta do EF",
+    "Ensino fundamental completo",
+    "Ensino médio incompleto",
+    "Ensino médio completo",
+    "Educação superior incompleta",
+    "Educação superior completa",
+]
 
 METODOS = {
     "AG_FORCA": "Força corporal/espancamento",
@@ -391,7 +514,7 @@ METODOS = {
 }
 
 # ============================================================
-# 7. CARREGAMENTO DOS DADOS
+# 7. CARREGAMENTO
 # ============================================================
 
 @st.cache_data(show_spinner=False)
@@ -403,9 +526,20 @@ def carregar_dados():
         engine="openpyxl",
     )
 
-    sinan["IDADE_ANOS"] = sinan["NU_IDADE_N"].apply(idade_em_anos)
-    sinan["NU_ANO"] = pd.to_numeric(sinan["NU_ANO"], errors="coerce")
-    sinan["LES_AUTOP"] = pd.to_numeric(sinan["LES_AUTOP"], errors="coerce")
+    sinan["IDADE_ANOS"] = (
+        sinan["NU_IDADE_N"]
+        .apply(idade_em_anos)
+    )
+
+    sinan["NU_ANO"] = pd.to_numeric(
+        sinan["NU_ANO"],
+        errors="coerce"
+    )
+
+    sinan["LES_AUTOP"] = pd.to_numeric(
+        sinan["LES_AUTOP"],
+        errors="coerce"
+    )
 
     sinan = sinan[
         sinan["NU_ANO"].between(2014, 2024)
@@ -414,56 +548,118 @@ def carregar_dados():
     ].copy()
 
     if len(sinan) != 12713:
+
         raise ValueError(
-            f"O universo validado possui 12.713 notificações, "
-            f"mas o processamento encontrou {len(sinan)}."
+            "O universo validado possui 12.713 notificações, "
+            f"mas foram encontradas {len(sinan)}."
         )
 
-    sinan["NU_ANO"] = sinan["NU_ANO"].astype(int)
-    sinan["IDADE_ANOS"] = sinan["IDADE_ANOS"].astype(int)
+    sinan["NU_ANO"] = (
+        sinan["NU_ANO"]
+        .astype(int)
+    )
+
+    sinan["IDADE_ANOS"] = (
+        sinan["IDADE_ANOS"]
+        .astype(int)
+    )
 
     sinan["FAIXA_ETARIA"] = pd.cut(
         sinan["IDADE_ANOS"],
         bins=[9, 14, 19],
-        labels=["10 a 14 anos", "15 a 19 anos"],
+        labels=[
+            "10 a 14 anos",
+            "15 a 19 anos"
+        ],
     ).astype(str)
 
-    sinan["SEXO_DESC"] = sinan["CS_SEXO"].apply(decodificar_sexo)
-    sinan["RACA_COR_DESC"] = sinan["CS_RACA"].apply(decodificar_raca)
-    sinan["RECORRENCIA_DESC"] = sinan["OUT_VEZES"].apply(
-        decodificar_recorrencia
+    sinan["SEXO_DESC"] = (
+        sinan["CS_SEXO"]
+        .apply(decodificar_sexo)
+    )
+
+    sinan["RACA_COR_DESC"] = (
+        sinan["CS_RACA"]
+        .apply(decodificar_raca)
+    )
+
+    sinan["RECORRENCIA_DESC"] = (
+        sinan["OUT_VEZES"]
+        .apply(decodificar_recorrencia)
     )
 
     coluna_escolaridade = None
-    for candidato in ["CS_ESCOL_N", "CS_ESCOL", "ESCOLARIDADE"]:
+
+    for candidato in [
+        "CS_ESCOL_N",
+        "CS_ESCOL",
+        "ESCOLARIDADE",
+    ]:
+
         if candidato in sinan.columns:
             coluna_escolaridade = candidato
             break
 
     if coluna_escolaridade:
-        sinan["ESCOLARIDADE_DESC"] = sinan[coluna_escolaridade].apply(
-            decodificar_escolaridade
-        )
-    else:
-        sinan["ESCOLARIDADE_DESC"] = "Não informado"
 
-    sinan["COD_MUN_6"] = sinan["ID_MN_RESI"].apply(codigo_municipio_6d)
+        sinan["ESCOLARIDADE_DESC"] = (
+            sinan[coluna_escolaridade]
+            .apply(decodificar_escolaridade)
+        )
+
+    else:
+
+        sinan["ESCOLARIDADE_DESC"] = (
+            "Não informado"
+        )
+
+    sinan["COD_MUN_6"] = (
+        sinan["ID_MN_RESI"]
+        .apply(codigo_municipio_6d)
+    )
 
     for campo in METODOS:
+
         if campo in sinan.columns:
-            sinan[campo] = pd.to_numeric(sinan[campo], errors="coerce")
+
+            sinan[campo] = pd.to_numeric(
+                sinan[campo],
+                errors="coerce"
+            )
+
         else:
+
             sinan[campo] = np.nan
 
     sinan["N_METODOS"] = sum(
-        (sinan[campo] == 1).astype(int) for campo in METODOS
+        (sinan[campo] == 1).astype(int)
+        for campo in METODOS
     )
 
-    sinan["MULTIPLOS_METODOS"] = np.where(
-        sinan["N_METODOS"] >= 2,
-        "Dois ou mais métodos",
-        np.where(sinan["N_METODOS"] == 1, "Um método", "Nenhum método marcado"),
+    def classificar_numero_metodos(n):
+
+        if n == 0:
+            return "Sem método informado"
+
+        if n == 1:
+            return "1 método"
+
+        if n == 2:
+            return "2 métodos"
+
+        if n == 3:
+            return "3 métodos"
+
+        return "4 ou mais métodos"
+
+    sinan["CLASSE_N_METODOS"] = (
+        sinan["N_METODOS"]
+        .apply(classificar_numero_metodos)
     )
+
+    # --------------------------------------------------------
+    # POPULAÇÃO
+    # --------------------------------------------------------
 
     pop = pd.read_excel(
         ARQUIVO_POP,
@@ -475,23 +671,53 @@ def carregar_dados():
     pop["COD_MUN"] = (
         pop["COD_MUN"]
         .astype(str)
-        .str.replace(r"\.0$", "", regex=True)
+        .str.replace(
+            r"\.0$",
+            "",
+            regex=True
+        )
         .str.strip()
     )
 
-    pop["COD_MUN_6"] = pop["COD_MUN"].str[:6]
-    pop["ANO"] = pd.to_numeric(pop["ANO"], errors="coerce")
-    pop["IDADE"] = pd.to_numeric(pop["IDADE"], errors="coerce")
-    pop["SEXO"] = pd.to_numeric(pop["SEXO"], errors="coerce")
+    pop["COD_MUN_6"] = (
+        pop["COD_MUN"]
+        .str[:6]
+    )
+
+    pop["ANO"] = pd.to_numeric(
+        pop["ANO"],
+        errors="coerce"
+    )
+
+    pop["IDADE"] = pd.to_numeric(
+        pop["IDADE"],
+        errors="coerce"
+    )
+
+    pop["SEXO"] = pd.to_numeric(
+        pop["SEXO"],
+        errors="coerce"
+    )
 
     pop["POPULAÇÃO"] = (
         pop["POPULAÇÃO"]
         .astype(str)
-        .str.replace(".", "", regex=False)
-        .str.replace(",", ".", regex=False)
+        .str.replace(
+            ".",
+            "",
+            regex=False
+        )
+        .str.replace(
+            ",",
+            ".",
+            regex=False
+        )
     )
 
-    pop["POPULAÇÃO"] = pd.to_numeric(pop["POPULAÇÃO"], errors="coerce")
+    pop["POPULAÇÃO"] = pd.to_numeric(
+        pop["POPULAÇÃO"],
+        errors="coerce"
+    )
 
     pop = pop[
         pop["ANO"].between(2014, 2024)
@@ -499,7 +725,13 @@ def carregar_dados():
     ].copy()
 
     municipios = (
-        pop[["COD_MUN_6", "MUNICÍPIO", "REGIÃO DE SAÚDE"]]
+        pop[
+            [
+                "COD_MUN_6",
+                "MUNICÍPIO",
+                "REGIÃO DE SAÚDE",
+            ]
+        ]
         .drop_duplicates("COD_MUN_6")
     )
 
@@ -509,7 +741,11 @@ def carregar_dados():
         how="left",
     )
 
-    return sinan, pop, coluna_escolaridade
+    return (
+        sinan,
+        pop,
+        coluna_escolaridade,
+    )
 
 
 @st.cache_data(show_spinner=False)
@@ -517,92 +753,157 @@ def carregar_malha():
 
     pasta = tempfile.mkdtemp()
 
-    with zipfile.ZipFile(ARQUIVO_MALHA, "r") as z:
-        z.extractall(pasta)
+    with zipfile.ZipFile(
+        ARQUIVO_MALHA,
+        "r"
+    ) as arquivo:
+
+        arquivo.extractall(pasta)
 
     arquivos_shp = []
 
     for raiz, _, arquivos in os.walk(pasta):
+
         for arquivo in arquivos:
+
             if arquivo.lower().endswith(".shp"):
-                arquivos_shp.append(os.path.join(raiz, arquivo))
+
+                arquivos_shp.append(
+                    os.path.join(
+                        raiz,
+                        arquivo
+                    )
+                )
 
     if not arquivos_shp:
-        raise FileNotFoundError("Nenhum arquivo .shp foi encontrado no ZIP.")
 
-    geo = gpd.read_file(arquivos_shp[0])
+        raise FileNotFoundError(
+            "Nenhum arquivo .shp foi encontrado."
+        )
 
-    geo["COD_MUN_6"] = geo["CD_MUN"].astype(str).str[:6]
-    geo = geo.to_crs(epsg=4326)
+    geo = gpd.read_file(
+        arquivos_shp[0]
+    )
+
+    geo["COD_MUN_6"] = (
+        geo["CD_MUN"]
+        .astype(str)
+        .str[:6]
+    )
+
+    geo = geo.to_crs(
+        epsg=4326
+    )
 
     return geo
 
 
 try:
-    with st.spinner("Carregando e validando os bancos..."):
-        df, pop, COL_ESCOLARIDADE = carregar_dados()
+
+    with st.spinner(
+        "Carregando e validando os bancos..."
+    ):
+
+        df, pop, COL_ESCOLARIDADE = (
+            carregar_dados()
+        )
+
         geo = carregar_malha()
 
 except Exception as erro:
-    st.error("Não foi possível carregar os bancos do dashboard.")
+
+    st.error(
+        "Não foi possível carregar "
+        "os bancos do dashboard."
+    )
+
     st.exception(erro)
+
     st.stop()
 
 # ============================================================
-# 8. CABEÇALHO INSTITUCIONAL
+# 8. CABEÇALHO
 # ============================================================
 
-cab1, cab2, cab3 = st.columns([1, 5, 1])
+cab1, cab2, cab3 = st.columns(
+    [1, 5, 1]
+)
 
 with cab1:
+
     if os.path.exists("logo_upe.png"):
-        st.image("logo_upe.png", width=125)
+
+        st.image(
+            "logo_upe.png",
+            width=125
+        )
 
 with cab2:
+
     st.markdown(
         """
         <div class="instituicao">
         UNIVERSIDADE DE PERNAMBUCO — UPE · CAMPUS CARUARU
         </div>
+
         <div class="curso">
-        PÓS-GRADUAÇÃO EM CIÊNCIA DE DADOS E INTELIGÊNCIA ARTIFICIAL
-        APLICADA À SAÚDE · VISUALIZAÇÃO DE DADOS
+        PÓS-GRADUAÇÃO EM CIÊNCIA DE DADOS E INTELIGÊNCIA
+        ARTIFICIAL APLICADA À SAÚDE · VISUALIZAÇÃO DE DADOS
         </div>
+
         <div class="titulo-principal">
         CENÁRIO EPIDEMIOLÓGICO DE AUTOLESÕES EM ADOLESCENTES
         EM PERNAMBUCO DE 2014–2024
         </div>
+
         <div class="subtitulo">
-        Notificações de lesão autoprovocada em adolescentes de 10 a 19 anos
-        residentes em Pernambuco
+        Notificações de lesão autoprovocada em adolescentes
+        de 10 a 19 anos residentes em Pernambuco
         </div>
         """,
         unsafe_allow_html=True,
     )
 
 with cab3:
-    if os.path.exists("logo_cdia_saude.png"):
-        st.image("logo_cdia_saude.png", width=125)
+
+    if os.path.exists(
+        "logo_cdia_saude.png"
+    ):
+
+        st.image(
+            "logo_cdia_saude.png",
+            width=125
+        )
 
 # ============================================================
-# 9. FILTROS LATERAIS
+# 9. FILTROS
 # ============================================================
 
 with st.sidebar:
 
     st.markdown("## Filtros")
-    st.caption("Todos os gráficos compatíveis respondem aos filtros selecionados.")
+
+    st.caption(
+        "Os filtros atuam sobre os indicadores "
+        "e gráficos compatíveis."
+    )
 
     anos = st.multiselect(
         "Ano",
-        sorted(df["NU_ANO"].unique()),
+        sorted(
+            df["NU_ANO"].unique()
+        ),
         key="f_ano",
         placeholder="Todos",
     )
 
     regioes = st.multiselect(
         "Região de Saúde",
-        sorted(df["REGIÃO DE SAÚDE"].dropna().unique()),
+        sorted(
+            df["REGIÃO DE SAÚDE"]
+            .dropna()
+            .unique()
+        ),
         key="f_regiao",
         placeholder="Todas",
     )
@@ -610,27 +911,43 @@ with st.sidebar:
     base_municipios = df.copy()
 
     if regioes:
-        base_municipios = base_municipios[
-            base_municipios["REGIÃO DE SAÚDE"].isin(regioes)
-        ]
+
+        base_municipios = (
+            base_municipios[
+                base_municipios[
+                    "REGIÃO DE SAÚDE"
+                ].isin(regioes)
+            ]
+        )
 
     municipios = st.multiselect(
         "Município",
-        sorted(base_municipios["MUNICÍPIO"].dropna().unique()),
+        sorted(
+            base_municipios[
+                "MUNICÍPIO"
+            ]
+            .dropna()
+            .unique()
+        ),
         key="f_municipio",
         placeholder="Todos",
     )
 
+    # SOMENTE CATEGORIAS VÁLIDAS
+
     sexos = st.multiselect(
         "Sexo",
-        ["Feminino", "Masculino", "Ignorado", "Não informado"],
+        SEXO_VALIDO,
         key="f_sexo",
         placeholder="Todos",
     )
 
     faixas = st.multiselect(
         "Faixa etária",
-        ["10 a 14 anos", "15 a 19 anos"],
+        [
+            "10 a 14 anos",
+            "15 a 19 anos",
+        ],
         key="f_faixa",
         placeholder="Todas",
     )
@@ -644,29 +961,21 @@ with st.sidebar:
 
     racas = st.multiselect(
         "Raça/cor",
-        [
-            "Parda",
-            "Branca",
-            "Preta",
-            "Amarela",
-            "Indígena",
-            "Ignorado",
-            "Não informado",
-        ],
+        RACA_VALIDA,
         key="f_raca",
         placeholder="Todas",
     )
 
     escolaridades = st.multiselect(
         "Escolaridade",
-        sorted(df["ESCOLARIDADE_DESC"].dropna().unique()),
+        ESCOLARIDADE_VALIDA,
         key="f_escolaridade",
         placeholder="Todas",
     )
 
     recorrencias = st.multiselect(
         "Ocorrência anterior / recorrência",
-        ["Sim", "Não", "Ignorado", "Não informado"],
+        RECORRENCIA_VALIDA,
         key="f_recorrencia",
         placeholder="Todas",
     )
@@ -685,52 +994,99 @@ with st.sidebar:
     )
 
 # ============================================================
-# 10. FILTRAGEM
+# 10. APLICAR FILTROS
 # ============================================================
 
 dados = df.copy()
 
 if anos:
-    dados = dados[dados["NU_ANO"].isin(anos)]
+
+    dados = dados[
+        dados["NU_ANO"].isin(anos)
+    ]
 
 if regioes:
-    dados = dados[dados["REGIÃO DE SAÚDE"].isin(regioes)]
+
+    dados = dados[
+        dados[
+            "REGIÃO DE SAÚDE"
+        ].isin(regioes)
+    ]
 
 if municipios:
-    dados = dados[dados["MUNICÍPIO"].isin(municipios)]
+
+    dados = dados[
+        dados["MUNICÍPIO"]
+        .isin(municipios)
+    ]
 
 if sexos:
-    dados = dados[dados["SEXO_DESC"].isin(sexos)]
+
+    dados = dados[
+        dados["SEXO_DESC"]
+        .isin(sexos)
+    ]
 
 if faixas:
-    dados = dados[dados["FAIXA_ETARIA"].isin(faixas)]
+
+    dados = dados[
+        dados["FAIXA_ETARIA"]
+        .isin(faixas)
+    ]
 
 if idades:
-    dados = dados[dados["IDADE_ANOS"].isin(idades)]
+
+    dados = dados[
+        dados["IDADE_ANOS"]
+        .isin(idades)
+    ]
 
 if racas:
-    dados = dados[dados["RACA_COR_DESC"].isin(racas)]
+
+    dados = dados[
+        dados["RACA_COR_DESC"]
+        .isin(racas)
+    ]
 
 if escolaridades:
-    dados = dados[dados["ESCOLARIDADE_DESC"].isin(escolaridades)]
+
+    dados = dados[
+        dados["ESCOLARIDADE_DESC"]
+        .isin(escolaridades)
+    ]
 
 if recorrencias:
-    dados = dados[dados["RECORRENCIA_DESC"].isin(recorrencias)]
+
+    dados = dados[
+        dados["RECORRENCIA_DESC"]
+        .isin(recorrencias)
+    ]
 
 if metodos_selecionados:
 
     campos = [
         campo
-        for campo, descricao in METODOS.items()
-        if descricao in metodos_selecionados
+        for campo, descricao
+        in METODOS.items()
+        if descricao
+        in metodos_selecionados
     ]
 
-    mascara = pd.Series(False, index=dados.index)
+    mascara = pd.Series(
+        False,
+        index=dados.index
+    )
 
     for campo in campos:
-        mascara = mascara | (dados[campo] == 1)
 
-    dados = dados[mascara]
+        mascara = (
+            mascara
+            | (dados[campo] == 1)
+        )
+
+    dados = dados[
+        mascara
+    ]
 
 # ============================================================
 # 11. POPULAÇÃO COMPATÍVEL
@@ -739,25 +1095,44 @@ if metodos_selecionados:
 pop_f = pop.copy()
 
 if anos:
-    pop_f = pop_f[pop_f["ANO"].isin(anos)]
+
+    pop_f = pop_f[
+        pop_f["ANO"].isin(anos)
+    ]
 
 if municipios:
 
-    codigos = df.loc[
-        df["MUNICÍPIO"].isin(municipios),
-        "COD_MUN_6",
-    ].dropna().unique()
+    codigos = (
+        df.loc[
+            df["MUNICÍPIO"]
+            .isin(municipios),
+            "COD_MUN_6",
+        ]
+        .dropna()
+        .unique()
+    )
 
-    pop_f = pop_f[pop_f["COD_MUN_6"].isin(codigos)]
+    pop_f = pop_f[
+        pop_f["COD_MUN_6"]
+        .isin(codigos)
+    ]
 
 elif regioes:
 
-    codigos = df.loc[
-        df["REGIÃO DE SAÚDE"].isin(regioes),
-        "COD_MUN_6",
-    ].dropna().unique()
+    codigos = (
+        df.loc[
+            df["REGIÃO DE SAÚDE"]
+            .isin(regioes),
+            "COD_MUN_6",
+        ]
+        .dropna()
+        .unique()
+    )
 
-    pop_f = pop_f[pop_f["COD_MUN_6"].isin(codigos)]
+    pop_f = pop_f[
+        pop_f["COD_MUN_6"]
+        .isin(codigos)
+    ]
 
 if sexos:
 
@@ -769,35 +1144,76 @@ if sexos:
     if "Feminino" in sexos:
         codigos_sexo.append(2)
 
-    if codigos_sexo:
-        pop_f = pop_f[pop_f["SEXO"].isin(codigos_sexo)]
+    pop_f = pop_f[
+        pop_f["SEXO"]
+        .isin(codigos_sexo)
+    ]
 
 if idades:
-    pop_f = pop_f[pop_f["IDADE"].isin(idades)]
+
+    pop_f = pop_f[
+        pop_f["IDADE"]
+        .isin(idades)
+    ]
 
 elif faixas:
 
     idades_pop = []
 
     if "10 a 14 anos" in faixas:
-        idades_pop.extend(range(10, 15))
+
+        idades_pop.extend(
+            range(10, 15)
+        )
 
     if "15 a 19 anos" in faixas:
-        idades_pop.extend(range(15, 20))
 
-    pop_f = pop_f[pop_f["IDADE"].isin(idades_pop)]
+        idades_pop.extend(
+            range(15, 20)
+        )
+
+    pop_f = pop_f[
+        pop_f["IDADE"]
+        .isin(idades_pop)
+    ]
+
+# Filtros que não possuem denominador populacional
 
 filtro_sem_denominador = any([
     bool(racas),
     bool(escolaridades),
     bool(recorrencias),
     bool(metodos_selecionados),
-    any(s in ["Ignorado", "Não informado"] for s in sexos),
 ])
 
 # ============================================================
-# 12. MÉTODOS EM FORMATO LONGO
+# 12. BASES VÁLIDAS ESPECÍFICAS
 # ============================================================
+
+dados_sexo_valido = dados[
+    dados["SEXO_DESC"]
+    .isin(SEXO_VALIDO)
+].copy()
+
+dados_raca_valida = dados[
+    dados["RACA_COR_DESC"]
+    .isin(RACA_VALIDA)
+].copy()
+
+dados_rec_valida = dados[
+    dados["RECORRENCIA_DESC"]
+    .isin(RECORRENCIA_VALIDA)
+].copy()
+
+dados_esc_valida = dados[
+    dados["ESCOLARIDADE_DESC"]
+    .isin(ESCOLARIDADE_VALIDA)
+].copy()
+
+dados_metodo_valido = dados[
+    dados["N_METODOS"] >= 1
+].copy()
+
 
 def criar_metodos_long(base):
 
@@ -805,1913 +1221,2669 @@ def criar_metodos_long(base):
 
     for campo, descricao in METODOS.items():
 
-        temp = base[base[campo] == 1].copy()
+        temp = base[
+            base[campo] == 1
+        ].copy()
 
         if temp.empty:
             continue
 
         temp["METODO"] = descricao
+
         partes.append(temp)
 
     if not partes:
         return pd.DataFrame()
 
-    return pd.concat(partes, ignore_index=True)
+    return pd.concat(
+        partes,
+        ignore_index=True
+    )
 
 
-metodos_long = criar_metodos_long(dados)
+metodos_long = criar_metodos_long(
+    dados_metodo_valido
+)
 
 # ============================================================
-# 13. ABAS
+# 13. VISÃO GERAL
 # ============================================================
 
-abas = st.tabs([
+titulo_secao(
     "Visão geral",
+    "Síntese epidemiológica da seleção atual."
+)
+
+total = len(dados)
+
+if not filtro_sem_denominador:
+
+    populacao_total = (
+        pop_f["POPULAÇÃO"]
+        .sum()
+    )
+
+    taxa_total = (
+        total
+        / populacao_total
+        * 100000
+        if populacao_total > 0
+        else np.nan
+    )
+
+else:
+
+    populacao_total = np.nan
+    taxa_total = np.nan
+
+
+pct_fem = (
+    (
+        dados_sexo_valido[
+            "SEXO_DESC"
+        ] == "Feminino"
+    ).mean()
+    * 100
+    if len(dados_sexo_valido)
+    else np.nan
+)
+
+pct_15_19 = (
+    (
+        dados["FAIXA_ETARIA"]
+        == "15 a 19 anos"
+    ).mean()
+    * 100
+    if len(dados)
+    else np.nan
+)
+
+pct_rec = (
+    (
+        dados_rec_valida[
+            "RECORRENCIA_DESC"
+        ] == "Sim"
+    ).mean()
+    * 100
+    if len(dados_rec_valida)
+    else np.nan
+)
+
+k1, k2, k3, k4, k5 = (
+    st.columns(5)
+)
+
+k1.metric(
+    "Notificações",
+    numero_br(total)
+)
+
+k2.metric(
+    "Taxa/100 mil adolescentes",
+    (
+        numero_br(taxa_total, 1)
+        if pd.notna(taxa_total)
+        else "—"
+    )
+)
+
+k3.metric(
+    "Sexo feminino*",
+    percentual_br(pct_fem, 1)
+)
+
+k4.metric(
+    "15 a 19 anos",
+    percentual_br(pct_15_19, 1)
+)
+
+k5.metric(
+    "Recorrência*",
+    percentual_br(pct_rec, 1)
+)
+
+st.caption(
+    "* Percentuais de sexo e recorrência são calculados "
+    "somente entre registros válidos da respectiva variável."
+)
+
+if filtro_sem_denominador:
+
+    st.info(
+        "A taxa populacional não é apresentada para esta "
+        "seleção porque há filtro de raça/cor, escolaridade, "
+        "recorrência ou método, dimensões para as quais a "
+        "base populacional utilizada não possui denominadores."
+    )
+
+serie = (
+    dados.groupby("NU_ANO")
+    .size()
+    .reindex(
+        range(2014, 2025),
+        fill_value=0
+    )
+    .rename("Notificações")
+    .reset_index()
+)
+
+fig_visao = go.Figure()
+
+fig_visao.add_trace(
+    go.Bar(
+        x=serie["NU_ANO"],
+        y=serie["Notificações"],
+        marker_color=AZUL2,
+        hovertemplate=(
+            "<b>%{x}</b><br>"
+            "Notificações: %{y:,.0f}"
+            "<extra></extra>"
+        ),
+    )
+)
+
+fig_visao.update_layout(
+    title="Número de notificações por ano",
+    xaxis_title="Ano",
+    yaxis_title="Notificações",
+    showlegend=False,
+)
+
+estilo_figura(
+    fig_visao,
+    380
+)
+
+st.plotly_chart(
+    fig_visao,
+    use_container_width=True
+)
+
+st.markdown("#### Principais achados")
+
+if total > 0:
+
+    st.markdown(
+        f"""
+- **{numero_br(total)} notificações** compõem a seleção atual.
+- Entre registros com sexo válido, **{percentual_br(pct_fem, 1)}** correspondem ao sexo feminino.
+- **{percentual_br(pct_15_19, 1)}** das notificações ocorreram entre adolescentes de 15 a 19 anos.
+- Entre registros com informação válida de recorrência, **{percentual_br(pct_rec, 1)}** apresentaram ocorrência anterior.
+        """
+    )
+
+# ============================================================
+# 14. TENDÊNCIA
+# ============================================================
+
+titulo_secao(
     "Tendência",
-    "Território",
-    "Perfil",
-    "Características",
-    "Análise estatística",
-    "Qualidade",
-])
+    "Evolução das notificações e das taxas no período de 2014 a 2024."
+)
 
-# ============================================================
-# 14. VISÃO GERAL
-# ============================================================
+tend1, tend2 = st.columns(
+    [1.65, 1]
+)
 
-with abas[0]:
-
-    total = len(dados)
-
-    if not filtro_sem_denominador:
-        populacao_total = pop_f["POPULAÇÃO"].sum()
-
-        taxa_total = (
-            total / populacao_total * 100000
-            if populacao_total > 0
-            else np.nan
-        )
-    else:
-        populacao_total = np.nan
-        taxa_total = np.nan
-
-    sexo_valido = dados[
-        dados["SEXO_DESC"].isin(["Feminino", "Masculino"])
-    ]
-
-    pct_fem = (
-        (sexo_valido["SEXO_DESC"] == "Feminino").mean() * 100
-        if len(sexo_valido)
-        else np.nan
-    )
-
-    pct_15_19 = (
-        (dados["FAIXA_ETARIA"] == "15 a 19 anos").mean() * 100
-        if len(dados)
-        else np.nan
-    )
-
-    rec_valida = dados[
-        dados["RECORRENCIA_DESC"].isin(["Sim", "Não"])
-    ]
-
-    pct_rec = (
-        (rec_valida["RECORRENCIA_DESC"] == "Sim").mean() * 100
-        if len(rec_valida)
-        else np.nan
-    )
-
-    k1, k2, k3, k4, k5 = st.columns(5)
-
-    k1.metric("Notificações", numero_br(total))
-
-    k2.metric(
-        "Taxa/100 mil adolescentes",
-        numero_br(taxa_total, 1) if pd.notna(taxa_total) else "—",
-    )
-
-    k3.metric("Sexo feminino", percentual_br(pct_fem, 1))
-    k4.metric("15 a 19 anos", percentual_br(pct_15_19, 1))
-    k5.metric("Recorrência*", percentual_br(pct_rec, 1))
-
-    st.caption(
-        "* Recorrência calculada entre respostas válidas (Sim/Não). "
-        "A taxa populacional só é exibida quando os filtros possuem "
-        "denominador populacional compatível."
-    )
-
-    if filtro_sem_denominador:
-        st.info(
-            "A taxa populacional não é recalculada nesta seleção porque "
-            "há filtro sem denominador populacional correspondente "
-            "(raça/cor, escolaridade, recorrência, método ou sexo sem "
-            "categoria populacional compatível)."
-        )
-
-    st.markdown("### Evolução temporal")
+with tend1:
 
     serie = (
         dados.groupby("NU_ANO")
         .size()
-        .reindex(range(2014, 2025), fill_value=0)
+        .reindex(
+            range(2014, 2025),
+            fill_value=0
+        )
         .rename("Notificações")
         .reset_index()
-        .rename(columns={"index": "NU_ANO"})
     )
 
-    fig = go.Figure()
+    if not filtro_sem_denominador:
 
-    fig.add_trace(
-        go.Bar(
-            x=serie["NU_ANO"],
-            y=serie["Notificações"],
-            name="Notificações",
-            marker_color=AZUL2,
-            hovertemplate="<b>%{x}</b><br>Notificações: %{y:,.0f}<extra></extra>",
-        )
-    )
-
-    fig.update_layout(
-        title="Número de notificações por ano",
-        xaxis_title="Ano",
-        yaxis_title="Notificações",
-        showlegend=False,
-    )
-
-    estilo_figura(fig, 390)
-    st.plotly_chart(fig, use_container_width=True)
-
-    st.markdown("### Principais achados da seleção")
-
-    achados = []
-
-    if total > 0:
-        achados.append(
-            f"Foram identificadas **{numero_br(total)} notificações** "
-            f"na seleção atual."
+        pop_ano = (
+            pop_f.groupby(
+                "ANO",
+                as_index=False
+            )["POPULAÇÃO"]
+            .sum()
         )
 
-    if pd.notna(pct_fem):
-        achados.append(
-            f"O sexo feminino corresponde a **{percentual_br(pct_fem, 1)}** "
-            f"das notificações com sexo válido."
+        temporal = serie.merge(
+            pop_ano,
+            left_on="NU_ANO",
+            right_on="ANO",
+            how="left",
         )
 
-    if pd.notna(pct_15_19):
-        achados.append(
-            f"Adolescentes de 15 a 19 anos representam "
-            f"**{percentual_br(pct_15_19, 1)}** das notificações selecionadas."
+        temporal["Taxa"] = np.where(
+            temporal["POPULAÇÃO"] > 0,
+            temporal["Notificações"]
+            / temporal["POPULAÇÃO"]
+            * 100000,
+            np.nan,
         )
 
-    if pd.notna(pct_rec):
-        achados.append(
-            f"Entre os registros com informação válida de recorrência, "
-            f"**{percentual_br(pct_rec, 1)}** registraram ocorrência anterior."
+        fig_tempo = make_subplots(
+            specs=[
+                [
+                    {
+                        "secondary_y": True
+                    }
+                ]
+            ]
         )
 
-    for texto in achados:
-        st.markdown(f"- {texto}")
-
-# ============================================================
-# 15. TENDÊNCIA
-# ============================================================
-
-with abas[1]:
-
-    st.subheader("Tendência temporal")
-
-    esquerda, direita = st.columns([1.65, 1])
-
-    with esquerda:
-
-        serie = (
-            dados.groupby("NU_ANO")
-            .size()
-            .reindex(range(2014, 2025), fill_value=0)
-            .rename("Notificações")
-            .reset_index()
-            .rename(columns={"index": "NU_ANO"})
+        fig_tempo.add_trace(
+            go.Bar(
+                x=temporal["NU_ANO"],
+                y=temporal["Notificações"],
+                name="Notificações",
+                marker_color=AZUL2,
+                opacity=0.78,
+            ),
+            secondary_y=False,
         )
 
-        if not filtro_sem_denominador:
-
-            pop_ano = (
-                pop_f.groupby("ANO", as_index=False)["POPULAÇÃO"]
-                .sum()
-            )
-
-            temporal = serie.merge(
-                pop_ano,
-                left_on="NU_ANO",
-                right_on="ANO",
-                how="left",
-            )
-
-            temporal["Taxa"] = np.where(
-                temporal["POPULAÇÃO"] > 0,
-                temporal["Notificações"] / temporal["POPULAÇÃO"] * 100000,
-                np.nan,
-            )
-
-            fig_tempo = make_subplots(specs=[[{"secondary_y": True}]])
-
-            fig_tempo.add_trace(
-                go.Bar(
-                    x=temporal["NU_ANO"],
-                    y=temporal["Notificações"],
-                    name="Notificações",
-                    marker_color=AZUL2,
-                    opacity=0.78,
-                    hovertemplate=(
-                        "<b>%{x}</b><br>"
-                        "Notificações: %{y:,.0f}<extra></extra>"
-                    ),
+        fig_tempo.add_trace(
+            go.Scatter(
+                x=temporal["NU_ANO"],
+                y=temporal["Taxa"],
+                name="Taxa/100 mil",
+                mode="lines+markers",
+                line=dict(
+                    color=VERMELHO,
+                    width=3
                 ),
-                secondary_y=False,
-            )
-
-            fig_tempo.add_trace(
-                go.Scatter(
-                    x=temporal["NU_ANO"],
-                    y=temporal["Taxa"],
-                    name="Taxa/100 mil",
-                    mode="lines+markers",
-                    line=dict(color=VERMELHO, width=3),
-                    marker=dict(size=7),
-                    hovertemplate=(
-                        "<b>%{x}</b><br>"
-                        "Taxa: %{y:.1f}/100 mil<extra></extra>"
-                    ),
+                marker=dict(
+                    size=7
                 ),
-                secondary_y=True,
-            )
-
-            fig_tempo.update_yaxes(
-                title_text="Número de notificações",
-                secondary_y=False,
-            )
-
-            fig_tempo.update_yaxes(
-                title_text="Taxa por 100 mil adolescentes",
-                secondary_y=True,
-            )
-
-            fig_tempo.update_layout(
-                title="Notificações e taxa por 100 mil adolescentes",
-                xaxis_title="Ano",
-                hovermode="x unified",
-                legend=dict(
-                    orientation="h",
-                    yanchor="bottom",
-                    y=1.02,
-                    xanchor="left",
-                    x=0,
-                ),
-            )
-
-        else:
-
-            fig_tempo = go.Figure(
-                go.Bar(
-                    x=serie["NU_ANO"],
-                    y=serie["Notificações"],
-                    marker_color=AZUL2,
-                    name="Notificações",
-                )
-            )
-
-            fig_tempo.update_layout(
-                title="Número de notificações por ano",
-                xaxis_title="Ano",
-                yaxis_title="Notificações",
-            )
-
-        estilo_figura(fig_tempo, 470)
-        st.plotly_chart(fig_tempo, use_container_width=True)
-
-        if filtro_sem_denominador:
-            st.caption(
-                "A linha de taxa é ocultada porque a seleção contém "
-                "dimensão sem denominador populacional correspondente."
-            )
-
-    with direita:
-
-        raca_ano = (
-            dados.groupby(["NU_ANO", "RACA_COR_DESC"])
-            .size()
-            .reset_index(name="Notificações")
+            ),
+            secondary_y=True,
         )
 
-        ordem_raca = [
-            "Parda",
-            "Branca",
-            "Preta",
-            "Amarela",
-            "Indígena",
-            "Ignorado",
-            "Não informado",
-        ]
-
-        fig_raca_tempo = px.line(
-            raca_ano,
-            x="NU_ANO",
-            y="Notificações",
-            color="RACA_COR_DESC",
-            markers=True,
-            category_orders={"RACA_COR_DESC": ordem_raca},
-            color_discrete_map=CORES_RACA,
-            title="Notificações segundo raça/cor e ano",
+        fig_tempo.update_yaxes(
+            title_text="Número de notificações",
+            secondary_y=False,
         )
 
-        fig_raca_tempo.update_layout(
+        fig_tempo.update_yaxes(
+            title_text="Taxa por 100 mil adolescentes",
+            secondary_y=True,
+        )
+
+        fig_tempo.update_layout(
+            title=(
+                "Notificações e taxa por "
+                "100 mil adolescentes"
+            ),
+            xaxis_title="Ano",
+            hovermode="x unified",
+            legend=dict(
+                orientation="h",
+                y=1.08
+            ),
+        )
+
+    else:
+
+        fig_tempo = go.Figure(
+            go.Bar(
+                x=serie["NU_ANO"],
+                y=serie["Notificações"],
+                marker_color=AZUL2,
+            )
+        )
+
+        fig_tempo.update_layout(
+            title="Número de notificações por ano",
             xaxis_title="Ano",
             yaxis_title="Notificações",
-            legend_title="Raça/cor",
+            showlegend=False,
         )
 
-        estilo_figura(fig_raca_tempo, 470)
-        st.plotly_chart(fig_raca_tempo, use_container_width=True)
+    estilo_figura(
+        fig_tempo,
+        470
+    )
 
-        st.caption(
-            "Raça/cor é apresentada por número de notificações. "
-            "Não há denominador populacional por raça/cor nesta base."
+    st.plotly_chart(
+        fig_tempo,
+        use_container_width=True
+    )
+
+with tend2:
+
+    # SOMENTE RAÇA/COR VÁLIDA
+
+    raca_ano = (
+        dados_raca_valida
+        .groupby(
+            [
+                "NU_ANO",
+                "RACA_COR_DESC"
+            ]
         )
-
-    st.markdown("### Taxas específicas por sexo e faixa etária")
-
-    base_taxas = df.copy()
-
-    if anos:
-        base_taxas = base_taxas[base_taxas["NU_ANO"].isin(anos)]
-
-    if regioes:
-        base_taxas = base_taxas[base_taxas["REGIÃO DE SAÚDE"].isin(regioes)]
-
-    if municipios:
-        base_taxas = base_taxas[base_taxas["MUNICÍPIO"].isin(municipios)]
-
-    grupos = []
-
-    for sexo_nome, sexo_cod in [("Feminino", 2), ("Masculino", 1)]:
-        for faixa_nome, faixa_idades in [
-            ("10 a 14 anos", range(10, 15)),
-            ("15 a 19 anos", range(15, 20)),
-        ]:
-
-            eventos = base_taxas[
-                (base_taxas["SEXO_DESC"] == sexo_nome)
-                & (base_taxas["IDADE_ANOS"].isin(faixa_idades))
-            ]
-
-            p = pop.copy()
-
-            if anos:
-                p = p[p["ANO"].isin(anos)]
-
-            if municipios:
-                cods = df.loc[
-                    df["MUNICÍPIO"].isin(municipios), "COD_MUN_6"
-                ].unique()
-                p = p[p["COD_MUN_6"].isin(cods)]
-
-            elif regioes:
-                cods = df.loc[
-                    df["REGIÃO DE SAÚDE"].isin(regioes), "COD_MUN_6"
-                ].unique()
-                p = p[p["COD_MUN_6"].isin(cods)]
-
-            p = p[
-                (p["SEXO"] == sexo_cod)
-                & (p["IDADE"].isin(faixa_idades))
-            ]
-
-            n = len(eventos)
-            populacao_grupo = p["POPULAÇÃO"].sum()
-
-            taxa_grupo = (
-                n / populacao_grupo * 100000
-                if populacao_grupo > 0
-                else np.nan
-            )
-
-            li, ls = ic95_taxa(n, populacao_grupo)
-
-            grupos.append({
-                "Grupo": f"{sexo_nome} · {faixa_nome}",
-                "Notificações": n,
-                "População": populacao_grupo,
-                "Taxa": taxa_grupo,
-                "LI95": li,
-                "LS95": ls,
-            })
-
-    grupos = pd.DataFrame(grupos)
-
-    fig_grupos = go.Figure()
-
-    fig_grupos.add_trace(
-        go.Scatter(
-            x=grupos["Taxa"],
-            y=grupos["Grupo"],
-            mode="markers",
-            marker=dict(size=10, color=AZUL),
-            error_x=dict(
-                type="data",
-                symmetric=False,
-                array=grupos["LS95"] - grupos["Taxa"],
-                arrayminus=grupos["Taxa"] - grupos["LI95"],
-            ),
-            hovertemplate=(
-                "<b>%{y}</b><br>"
-                "Taxa: %{x:.1f}/100 mil<extra></extra>"
-            ),
+        .size()
+        .reset_index(
+            name="Notificações"
         )
     )
 
-    fig_grupos.update_layout(
-        title="Taxas específicas e IC95% por sexo e faixa etária",
-        xaxis_title="Taxa por 100 mil adolescentes",
-        yaxis_title="",
-        showlegend=False,
+    fig_raca_tempo = px.line(
+        raca_ano,
+        x="NU_ANO",
+        y="Notificações",
+        color="RACA_COR_DESC",
+        markers=True,
+        category_orders={
+            "RACA_COR_DESC":
+                RACA_VALIDA
+        },
+        color_discrete_map=CORES_RACA,
+        title=(
+            "Notificações segundo raça/cor e ano"
+        ),
     )
 
-    estilo_figura(fig_grupos, 360)
-    st.plotly_chart(fig_grupos, use_container_width=True)
-    # ============================================================
-# 16. TERRITÓRIO
+    fig_raca_tempo.update_layout(
+        xaxis_title="Ano",
+        yaxis_title="Notificações",
+        legend_title="Raça/cor",
+    )
+
+    estilo_figura(
+        fig_raca_tempo,
+        470
+    )
+
+    st.plotly_chart(
+        fig_raca_tempo,
+        use_container_width=True
+    )
+
+    st.caption(
+        "Somente registros com raça/cor válida são "
+        "representados neste gráfico."
+    )
+
+# ============================================================
+# 15. TERRITÓRIO
 # ============================================================
 
-with abas[2]:
+titulo_secao(
+    "Território",
+    "Distribuição espacial das notificações entre municípios e Regiões de Saúde."
+)
 
-    st.subheader("Distribuição territorial")
+pode_taxa_territorial = (
+    not filtro_sem_denominador
+)
 
-    pode_taxa_territorial = not filtro_sem_denominador
+if pode_taxa_territorial:
 
-    if pode_taxa_territorial:
-        medida_territorio = st.radio(
-            "Indicador do mapa",
-            ["Taxa por 100 mil", "Número de notificações"],
-            horizontal=True,
-            key="medida_territorio",
-        )
-    else:
-        medida_territorio = "Número de notificações"
-
-        st.info(
-            "O mapa está exibindo número de notificações porque a seleção "
-            "possui dimensão sem denominador populacional correspondente."
-        )
-
-    # --------------------------------------------------------
-    # Notificações por município
-    # --------------------------------------------------------
-
-    municipal = (
-        dados.dropna(subset=["COD_MUN_6"])
-        .groupby(["COD_MUN_6", "MUNICÍPIO"], as_index=False)
-        .size()
-        .rename(columns={"size": "Notificações"})
+    medida_territorio = st.radio(
+        "Indicador territorial",
+        [
+            "Taxa por 100 mil",
+            "Número de notificações"
+        ],
+        horizontal=True,
+        key="medida_territorio",
     )
 
-    # Todos os municípios da população filtrada
-    pop_municipal = (
-        pop_f.groupby("COD_MUN_6", as_index=False)["POPULAÇÃO"]
-        .sum()
+else:
+
+    medida_territorio = (
+        "Número de notificações"
     )
 
-    nomes_municipios = (
-        pop[["COD_MUN_6", "MUNICÍPIO", "REGIÃO DE SAÚDE"]]
-        .drop_duplicates("COD_MUN_6")
+    st.info(
+        "O território está sendo apresentado em números "
+        "absolutos porque a seleção contém dimensão sem "
+        "denominador populacional correspondente."
     )
 
-    municipal_completo = nomes_municipios.merge(
+municipal = (
+    dados.dropna(
+        subset=["COD_MUN_6"]
+    )
+    .groupby(
+        [
+            "COD_MUN_6",
+            "MUNICÍPIO"
+        ],
+        as_index=False
+    )
+    .size()
+    .rename(
+        columns={
+            "size": "Notificações"
+        }
+    )
+)
+
+pop_municipal = (
+    pop_f.groupby(
+        "COD_MUN_6",
+        as_index=False
+    )["POPULAÇÃO"]
+    .sum()
+)
+
+nomes_municipios = (
+    pop[
+        [
+            "COD_MUN_6",
+            "MUNICÍPIO",
+            "REGIÃO DE SAÚDE",
+        ]
+    ]
+    .drop_duplicates(
+        "COD_MUN_6"
+    )
+)
+
+municipal_completo = (
+    nomes_municipios
+    .merge(
         pop_municipal,
         on="COD_MUN_6",
-        how="inner",
+        how="inner"
     )
-
-    municipal_completo = municipal_completo.merge(
-        municipal[["COD_MUN_6", "Notificações"]],
+    .merge(
+        municipal[
+            [
+                "COD_MUN_6",
+                "Notificações"
+            ]
+        ],
         on="COD_MUN_6",
-        how="left",
+        how="left"
     )
+)
 
-    municipal_completo["Notificações"] = (
-        municipal_completo["Notificações"]
-        .fillna(0)
-        .astype(int)
-    )
+municipal_completo[
+    "Notificações"
+] = (
+    municipal_completo[
+        "Notificações"
+    ]
+    .fillna(0)
+    .astype(int)
+)
 
-    municipal_completo["Taxa por 100 mil"] = np.where(
-        municipal_completo["POPULAÇÃO"] > 0,
-        municipal_completo["Notificações"]
-        / municipal_completo["POPULAÇÃO"]
-        * 100000,
-        np.nan,
-    )
+municipal_completo[
+    "Taxa por 100 mil"
+] = np.where(
+    municipal_completo[
+        "POPULAÇÃO"
+    ] > 0,
+    municipal_completo[
+        "Notificações"
+    ]
+    / municipal_completo[
+        "POPULAÇÃO"
+    ]
+    * 100000,
+    np.nan,
+)
 
-    intervalos = municipal_completo.apply(
-        lambda linha: ic95_taxa(
-            linha["Notificações"],
-            linha["POPULAÇÃO"],
-        ),
-        axis=1,
-    )
+mapa = geo.merge(
+    municipal_completo,
+    on="COD_MUN_6",
+    how="left",
+)
 
-    municipal_completo["LI95"] = [x[0] for x in intervalos]
-    municipal_completo["LS95"] = [x[1] for x in intervalos]
+mapa[
+    "Notificações"
+] = (
+    mapa[
+        "Notificações"
+    ]
+    .fillna(0)
+)
 
-    mapa = geo.merge(
-        municipal_completo,
-        on="COD_MUN_6",
-        how="left",
-    )
+coluna_mapa = (
+    "Taxa por 100 mil"
+    if medida_territorio
+    == "Taxa por 100 mil"
+    else "Notificações"
+)
 
-    mapa["Notificações"] = mapa["Notificações"].fillna(0)
+terr1, terr2 = st.columns(
+    [1.35, 0.85]
+)
 
-    coluna_mapa = (
-        "Taxa por 100 mil"
-        if medida_territorio == "Taxa por 100 mil"
-        else "Notificações"
-    )
+with terr1:
 
-    c1, c2 = st.columns([1.35, 0.85])
-
-    with c1:
-
-        hover = {
-            "COD_MUN_6": False,
-            "Notificações": True,
-        }
-
-        if pode_taxa_territorial:
-            hover["Taxa por 100 mil"] = ":.1f"
-
-        fig_mapa = px.choropleth(
-            mapa,
-            geojson=mapa.__geo_interface__,
-            locations="COD_MUN_6",
-            featureidkey="properties.COD_MUN_6",
-            color=coluna_mapa,
-            hover_name="NM_MUN",
-            hover_data=hover,
-            color_continuous_scale=ESCALA_MAGNITUDE,
-            title=(
-                "Taxa de notificações por município de residência"
-                if coluna_mapa == "Taxa por 100 mil"
-                else "Número de notificações por município de residência"
-            ),
-        )
-
-        fig_mapa.update_geos(
-            fitbounds="locations",
-            visible=False,
-        )
-
-        fig_mapa.update_layout(
-            coloraxis_colorbar=dict(
-                title=(
-                    "Taxa/100 mil"
-                    if coluna_mapa == "Taxa por 100 mil"
-                    else "Notificações"
-                )
-            )
-        )
-
-        estilo_figura(fig_mapa, 570)
-        st.plotly_chart(fig_mapa, use_container_width=True)
-
-    with c2:
-
-        if coluna_mapa == "Taxa por 100 mil":
-
-            ranking = (
-                municipal_completo[
-                    municipal_completo["Notificações"] > 0
-                ]
-                .sort_values("Taxa por 100 mil", ascending=False)
-                .head(15)
-                .sort_values("Taxa por 100 mil")
-            )
-
-            fig_rank = px.bar(
-                ranking,
-                x="Taxa por 100 mil",
-                y="MUNICÍPIO",
-                orientation="h",
-                color="Taxa por 100 mil",
-                color_continuous_scale=ESCALA_MAGNITUDE,
-                title="15 maiores taxas municipais",
-                hover_data={
-                    "Notificações": True,
-                    "POPULAÇÃO": ":,.0f",
-                    "Taxa por 100 mil": ":.1f",
-                },
-            )
-
-            fig_rank.update_layout(
-                xaxis_title="Taxa por 100 mil adolescentes",
-                yaxis_title="",
-                coloraxis_showscale=False,
-            )
-
-        else:
-
-            ranking = (
-                municipal_completo
-                .sort_values("Notificações", ascending=False)
-                .head(15)
-                .sort_values("Notificações")
-            )
-
-            fig_rank = px.bar(
-                ranking,
-                x="Notificações",
-                y="MUNICÍPIO",
-                orientation="h",
-                color="Notificações",
-                color_continuous_scale=ESCALA_MAGNITUDE,
-                title="15 maiores números de notificações",
-            )
-
-            fig_rank.update_layout(
-                xaxis_title="Número de notificações",
-                yaxis_title="",
-                coloraxis_showscale=False,
-            )
-
-        estilo_figura(fig_rank, 570)
-        st.plotly_chart(fig_rank, use_container_width=True)
-
-    # --------------------------------------------------------
-    # Carga x magnitude
-    # --------------------------------------------------------
+    hover = {
+        "COD_MUN_6": False,
+        "Notificações": True,
+    }
 
     if pode_taxa_territorial:
 
-        st.markdown("### Carga de notificações × magnitude da taxa")
+        hover[
+            "Taxa por 100 mil"
+        ] = ":.1f"
 
-        dispersao = municipal_completo[
-            municipal_completo["POPULAÇÃO"] > 0
-        ].copy()
+    fig_mapa = px.choropleth(
+        mapa,
+        geojson=mapa.__geo_interface__,
+        locations="COD_MUN_6",
+        featureidkey=(
+            "properties.COD_MUN_6"
+        ),
+        color=coluna_mapa,
+        hover_name="NM_MUN",
+        hover_data=hover,
+        color_continuous_scale=(
+            ESCALA_MAGNITUDE
+        ),
+        title=(
+            "Taxa de notificações por município"
+            if coluna_mapa
+            == "Taxa por 100 mil"
+            else
+            "Número de notificações por município"
+        ),
+    )
 
-        fig_disp = px.scatter(
-            dispersao,
+    fig_mapa.update_geos(
+        fitbounds="locations",
+        visible=False,
+    )
+
+    estilo_figura(
+        fig_mapa,
+        550
+    )
+
+    st.plotly_chart(
+        fig_mapa,
+        use_container_width=True
+    )
+
+with terr2:
+
+    if coluna_mapa == (
+        "Taxa por 100 mil"
+    ):
+
+        ranking = (
+            municipal_completo[
+                municipal_completo[
+                    "Notificações"
+                ] > 0
+            ]
+            .sort_values(
+                "Taxa por 100 mil",
+                ascending=False
+            )
+            .head(15)
+            .sort_values(
+                "Taxa por 100 mil"
+            )
+        )
+
+        fig_rank = px.bar(
+            ranking,
             x="Taxa por 100 mil",
-            y="Notificações",
-            size="POPULAÇÃO",
-            hover_name="MUNICÍPIO",
-            hover_data={
-                "REGIÃO DE SAÚDE": True,
-                "POPULAÇÃO": ":,.0f",
-                "Taxa por 100 mil": ":.1f",
-                "Notificações": True,
-            },
-            size_max=45,
-            title=(
-                "Municípios segundo taxa, número de notificações "
-                "e população adolescente"
+            y="MUNICÍPIO",
+            orientation="h",
+            color="Taxa por 100 mil",
+            color_continuous_scale=(
+                ESCALA_MAGNITUDE
             ),
+            title="15 maiores taxas municipais",
         )
 
-        fig_disp.update_traces(
-            marker=dict(
-                color=AZUL2,
-                opacity=0.68,
-                line=dict(width=0.5, color="white"),
-            )
-        )
-
-        fig_disp.update_layout(
-            xaxis_title="Taxa por 100 mil adolescentes",
-            yaxis_title="Número de notificações",
-        )
-
-        estilo_figura(fig_disp, 480)
-        st.plotly_chart(fig_disp, use_container_width=True)
-
-        st.caption(
-            "O tamanho dos pontos representa a população adolescente. "
-            "A visualização ajuda a distinguir municípios com grande carga "
-            "absoluta daqueles com elevada magnitude relativa."
-        )
-
-    # --------------------------------------------------------
-    # Regiões de Saúde
-    # --------------------------------------------------------
-
-    st.markdown("### Regiões de Saúde")
-
-    regiao = (
-        dados.groupby("REGIÃO DE SAÚDE")
-        .size()
-        .reset_index(name="Notificações")
-        .sort_values("Notificações")
-    )
-
-    fig_regiao = px.bar(
-        regiao,
-        x="Notificações",
-        y="REGIÃO DE SAÚDE",
-        orientation="h",
-        color="Notificações",
-        color_continuous_scale=ESCALA_MAGNITUDE,
-        title="Notificações segundo Região de Saúde",
-        text="Notificações",
-    )
-
-    fig_regiao.update_layout(
-        xaxis_title="Número de notificações",
-        yaxis_title="",
-        coloraxis_showscale=False,
-    )
-
-    estilo_figura(fig_regiao, 460)
-    st.plotly_chart(fig_regiao, use_container_width=True)
-
-# ============================================================
-# 17. PERFIL
-# ============================================================
-
-with abas[3]:
-
-    st.subheader("Perfil epidemiológico das notificações")
-
-    p1, p2 = st.columns(2)
-
-    # --------------------------------------------------------
-    # Sexo
-    # --------------------------------------------------------
-
-    with p1:
-
-        sexo_plot = (
-            dados["SEXO_DESC"]
-            .value_counts(dropna=False)
-            .rename_axis("Sexo")
-            .reset_index(name="Notificações")
-        )
-
-        sexo_plot["Percentual"] = (
-            sexo_plot["Notificações"]
-            / sexo_plot["Notificações"].sum()
-            * 100
-            if sexo_plot["Notificações"].sum() > 0
-            else 0
-        )
-
-        fig_sexo = px.bar(
-            sexo_plot,
-            x="Sexo",
-            y="Notificações",
-            color="Sexo",
-            color_discrete_map={
-                "Feminino": FEMININO,
-                "Masculino": MASCULINO,
-                "Ignorado": CINZA,
-                "Não informado": "#BFC5CC",
-            },
-            text="Notificações",
-            title="Notificações segundo sexo",
-            hover_data={"Percentual": ":.1f"},
-        )
-
-        fig_sexo.update_layout(
-            xaxis_title="",
-            yaxis_title="Número de notificações",
-            showlegend=False,
-        )
-
-        estilo_figura(fig_sexo, 400)
-        st.plotly_chart(fig_sexo, use_container_width=True)
-
-    # --------------------------------------------------------
-    # Faixa etária
-    # --------------------------------------------------------
-
-    with p2:
-
-        faixa_plot = (
-            dados["FAIXA_ETARIA"]
-            .value_counts()
-            .reindex(
-                ["10 a 14 anos", "15 a 19 anos"],
-                fill_value=0,
-            )
-            .rename_axis("Faixa etária")
-            .reset_index(name="Notificações")
-        )
-
-        faixa_plot["Percentual"] = np.where(
-            faixa_plot["Notificações"].sum() > 0,
-            faixa_plot["Notificações"]
-            / faixa_plot["Notificações"].sum()
-            * 100,
-            0,
-        )
-
-        fig_faixa = px.bar(
-            faixa_plot,
-            x="Faixa etária",
-            y="Notificações",
-            color="Faixa etária",
-            color_discrete_map={
-                "10 a 14 anos": IDADE_10_14,
-                "15 a 19 anos": IDADE_15_19,
-            },
-            text="Notificações",
-            title="Notificações segundo faixa etária",
-            hover_data={"Percentual": ":.1f"},
-        )
-
-        fig_faixa.update_layout(
-            xaxis_title="",
-            yaxis_title="Número de notificações",
-            showlegend=False,
-        )
-
-        estilo_figura(fig_faixa, 400)
-        st.plotly_chart(fig_faixa, use_container_width=True)
-
-    # --------------------------------------------------------
-    # Idade simples
-    # --------------------------------------------------------
-
-    idade_plot = (
-        dados["IDADE_ANOS"]
-        .value_counts()
-        .reindex(range(10, 20), fill_value=0)
-        .rename_axis("Idade")
-        .reset_index(name="Notificações")
-    )
-
-    fig_idade = px.bar(
-        idade_plot,
-        x="Idade",
-        y="Notificações",
-        color="Notificações",
-        color_continuous_scale=[
-            "#D7F0ED",
-            "#2A9D8F",
-            "#E9A23B",
-        ],
-        text="Notificações",
-        title="Distribuição das notificações por idade simples",
-    )
-
-    fig_idade.update_layout(
-        xaxis=dict(dtick=1),
-        xaxis_title="Idade (anos)",
-        yaxis_title="Número de notificações",
-        coloraxis_showscale=False,
-    )
-
-    estilo_figura(fig_idade, 410)
-    st.plotly_chart(fig_idade, use_container_width=True)
-
-    # --------------------------------------------------------
-    # Raça/cor e escolaridade
-    # --------------------------------------------------------
-
-    p3, p4 = st.columns(2)
-
-    with p3:
-
-        ordem_raca = [
-            "Parda",
-            "Branca",
-            "Preta",
-            "Amarela",
-            "Indígena",
-            "Ignorado",
-            "Não informado",
-        ]
-
-        raca_plot = (
-            dados["RACA_COR_DESC"]
-            .value_counts()
-            .reindex(ordem_raca, fill_value=0)
-            .rename_axis("Raça/cor")
-            .reset_index(name="Notificações")
-        )
-
-        raca_plot["Percentual"] = np.where(
-            raca_plot["Notificações"].sum() > 0,
-            raca_plot["Notificações"]
-            / raca_plot["Notificações"].sum()
-            * 100,
-            0,
-        )
-
-        fig_raca = px.bar(
-            raca_plot,
-            x="Notificações",
-            y="Raça/cor",
-            orientation="h",
-            color="Raça/cor",
-            color_discrete_map=CORES_RACA,
-            text="Notificações",
-            title="Notificações segundo raça/cor",
-            hover_data={"Percentual": ":.1f"},
-        )
-
-        fig_raca.update_layout(
-            xaxis_title="Número de notificações",
-            yaxis_title="",
-            showlegend=False,
-        )
-
-        estilo_figura(fig_raca, 440)
-        st.plotly_chart(fig_raca, use_container_width=True)
-
-        st.caption(
-            "Raça/cor é apresentada por frequência e proporção. "
-            "A base populacional disponível não possui raça/cor."
-        )
-
-    with p4:
-
-        esc_plot = (
-            dados["ESCOLARIDADE_DESC"]
-            .value_counts()
-            .rename_axis("Escolaridade")
-            .reset_index(name="Notificações")
-            .sort_values("Notificações")
-        )
-
-        fig_esc = px.bar(
-            esc_plot,
-            x="Notificações",
-            y="Escolaridade",
-            orientation="h",
-            color="Notificações",
-            color_continuous_scale=[
-                "#DCE9F5",
-                "#3E6FA8",
-                "#173B6C",
-            ],
-            text="Notificações",
-            title="Notificações segundo escolaridade",
-        )
-
-        fig_esc.update_layout(
-            xaxis_title="Número de notificações",
+        fig_rank.update_layout(
+            xaxis_title=(
+                "Taxa por 100 mil adolescentes"
+            ),
             yaxis_title="",
             coloraxis_showscale=False,
         )
 
-        estilo_figura(fig_esc, 440)
-        st.plotly_chart(fig_esc, use_container_width=True)
+    else:
 
-        if COL_ESCOLARIDADE is None:
-            st.warning(
-                "A variável de escolaridade não foi localizada com os "
-                "nomes previstos no banco original."
+        ranking = (
+            municipal_completo
+            .sort_values(
+                "Notificações",
+                ascending=False
             )
-
-# ============================================================
-# 18. CARACTERÍSTICAS DA AUTOLESÃO
-# ============================================================
-
-with abas[4]:
-
-    st.subheader("Características das notificações")
-
-    c1, c2 = st.columns([0.8, 1.2])
-
-    # --------------------------------------------------------
-    # Recorrência
-    # --------------------------------------------------------
-
-    with c1:
-
-        rec_plot = (
-            dados["RECORRENCIA_DESC"]
-            .value_counts()
-            .reindex(
-                ["Sim", "Não", "Ignorado", "Não informado"],
-                fill_value=0,
+            .head(15)
+            .sort_values(
+                "Notificações"
             )
-            .rename_axis("Recorrência")
-            .reset_index(name="Notificações")
         )
 
-        fig_rec = px.bar(
-            rec_plot,
-            x="Recorrência",
-            y="Notificações",
-            color="Recorrência",
-            color_discrete_map={
-                "Sim": REC_SIM,
-                "Não": REC_NAO,
-                "Ignorado": CINZA,
-                "Não informado": "#BFC5CC",
-            },
-            text="Notificações",
-            title="Ocorrência anterior / recorrência",
+        fig_rank = px.bar(
+            ranking,
+            x="Notificações",
+            y="MUNICÍPIO",
+            orientation="h",
+            color="Notificações",
+            color_continuous_scale=(
+                ESCALA_MAGNITUDE
+            ),
+            title=(
+                "15 maiores números "
+                "de notificações"
+            ),
         )
 
-        fig_rec.update_layout(
-            xaxis_title="",
-            yaxis_title="Número de notificações",
-            showlegend=False,
+        fig_rank.update_layout(
+            xaxis_title=(
+                "Número de notificações"
+            ),
+            yaxis_title="",
+            coloraxis_showscale=False,
         )
 
-        estilo_figura(fig_rec, 430)
-        st.plotly_chart(fig_rec, use_container_width=True)
-
-        rec_validos = dados[
-            dados["RECORRENCIA_DESC"].isin(["Sim", "Não"])
-        ]
-
-        if len(rec_validos):
-
-            pct = (
-                (rec_validos["RECORRENCIA_DESC"] == "Sim").mean()
-                * 100
-            )
-
-            st.caption(
-                f"Entre {numero_br(len(rec_validos))} registros com "
-                f"resposta válida, {percentual_br(pct, 1)} apresentaram "
-                f"recorrência."
-            )
-
-    # --------------------------------------------------------
-    # Métodos
-    # --------------------------------------------------------
-
-    with c2:
-
-        if not metodos_long.empty:
-
-            dist_metodo = (
-                metodos_long["METODO"]
-                .value_counts()
-                .rename_axis("Método")
-                .reset_index(name="Marcações")
-                .sort_values("Marcações")
-            )
-
-            fig_metodo = px.bar(
-                dist_metodo,
-                x="Marcações",
-                y="Método",
-                orientation="h",
-                color="Marcações",
-                color_continuous_scale=ESCALA_MAGNITUDE,
-                text="Marcações",
-                title="Métodos utilizados",
-            )
-
-            fig_metodo.update_layout(
-                xaxis_title="Número de marcações",
-                yaxis_title="",
-                coloraxis_showscale=False,
-            )
-
-            estilo_figura(fig_metodo, 430)
-            st.plotly_chart(fig_metodo, use_container_width=True)
-
-        else:
-
-            st.info("Nenhum método foi identificado na seleção atual.")
-
-    st.caption(
-        "Método é uma variável de resposta múltipla. Uma mesma "
-        "notificação pode registrar mais de um método; por isso, "
-        "a soma das marcações pode superar o total de notificações."
+    estilo_figura(
+        fig_rank,
+        550
     )
 
-    # --------------------------------------------------------
-    # Número de métodos por notificação
-    # --------------------------------------------------------
+    st.plotly_chart(
+        fig_rank,
+        use_container_width=True
+    )
 
-    st.markdown("### Multiplicidade de métodos registrados")
+regiao = (
+    dados.groupby(
+        "REGIÃO DE SAÚDE"
+    )
+    .size()
+    .reset_index(
+        name="Notificações"
+    )
+    .sort_values(
+        "Notificações"
+    )
+)
 
-    mult = (
-        dados["MULTIPLOS_METODOS"]
+fig_regiao = px.bar(
+    regiao,
+    x="Notificações",
+    y="REGIÃO DE SAÚDE",
+    orientation="h",
+    color="Notificações",
+    color_continuous_scale=(
+        ESCALA_MAGNITUDE
+    ),
+    text="Notificações",
+    title=(
+        "Notificações segundo Região de Saúde"
+    ),
+)
+
+fig_regiao.update_layout(
+    xaxis_title="Número de notificações",
+    yaxis_title="",
+    coloraxis_showscale=False,
+)
+
+estilo_figura(
+    fig_regiao,
+    450
+)
+
+st.plotly_chart(
+    fig_regiao,
+    use_container_width=True
+)
+# ============================================================
+# 16. PERFIL EPIDEMIOLÓGICO
+# ============================================================
+
+titulo_secao(
+    "Perfil epidemiológico",
+    "Distribuição das notificações segundo características sociodemográficas. "
+    "As distribuições utilizam somente respostas válidas da variável analisada."
+)
+
+perfil1, perfil2 = st.columns(2)
+
+# ------------------------------------------------------------
+# SEXO — SOMENTE VÁLIDOS
+# ------------------------------------------------------------
+
+with perfil1:
+
+    sexo_plot = (
+        dados_sexo_valido[
+            "SEXO_DESC"
+        ]
         .value_counts()
         .reindex(
-            [
-                "Nenhum método marcado",
-                "Um método",
-                "Dois ou mais métodos",
-            ],
-            fill_value=0,
+            SEXO_VALIDO,
+            fill_value=0
         )
-        .rename_axis("Número de métodos")
-        .reset_index(name="Notificações")
+        .rename_axis("Sexo")
+        .reset_index(
+            name="Notificações"
+        )
     )
 
-    fig_mult = px.bar(
-        mult,
-        x="Número de métodos",
+    total_sexo_valido = (
+        sexo_plot[
+            "Notificações"
+        ].sum()
+    )
+
+    sexo_plot[
+        "Percentual"
+    ] = np.where(
+        total_sexo_valido > 0,
+        sexo_plot[
+            "Notificações"
+        ]
+        / total_sexo_valido
+        * 100,
+        0,
+    )
+
+    fig_sexo = px.bar(
+        sexo_plot,
+        x="Sexo",
         y="Notificações",
-        color="Número de métodos",
+        color="Sexo",
         color_discrete_map={
-            "Nenhum método marcado": CINZA,
-            "Um método": AZUL2,
-            "Dois ou mais métodos": VERMELHO,
+            "Feminino": FEMININO,
+            "Masculino": MASCULINO,
         },
         text="Notificações",
-        title="Número de métodos registrados por notificação",
+        hover_data={
+            "Percentual": ":.1f"
+        },
+        title=(
+            "Notificações segundo sexo"
+        ),
     )
 
-    fig_mult.update_layout(
+    fig_sexo.update_layout(
         xaxis_title="",
-        yaxis_title="Número de notificações",
+        yaxis_title=(
+            "Número de notificações"
+        ),
         showlegend=False,
     )
 
-    estilo_figura(fig_mult, 390)
-    st.plotly_chart(fig_mult, use_container_width=True)
-
-# ============================================================
-# 19. ANÁLISE ESTATÍSTICA
-# ============================================================
-
-with abas[5]:
-
-    st.subheader("Análise estatística")
-
-    st.caption(
-        "Esta área complementa a descrição epidemiológica com "
-        "medidas de associação, comparação de taxas e análise "
-        "estatística da tendência temporal."
+    estilo_figura(
+        fig_sexo,
+        400
     )
 
-    estat1, estat2, estat3 = st.tabs([
-        "Associação",
-        "Comparação de taxas",
-        "Tendência temporal",
-    ])
+    st.plotly_chart(
+        fig_sexo,
+        use_container_width=True
+    )
 
-    # ========================================================
-    # 19.1 ASSOCIAÇÃO
-    # ========================================================
+    st.caption(
+        f"N válido = "
+        f"{numero_br(total_sexo_valido)}. "
+        "Ignorados e não informados "
+        "não integram esta distribuição."
+    )
 
-    with estat1:
+# ------------------------------------------------------------
+# FAIXA ETÁRIA
+# ------------------------------------------------------------
 
-        st.markdown("#### Associação entre características das notificações")
+with perfil2:
 
-        opcoes_associacao = {
-            "Sexo": "SEXO_DESC",
-            "Faixa etária": "FAIXA_ETARIA",
-            "Raça/cor": "RACA_COR_DESC",
-            "Escolaridade": "ESCOLARIDADE_DESC",
-            "Recorrência": "RECORRENCIA_DESC",
-        }
+    faixa_plot = (
+        dados[
+            "FAIXA_ETARIA"
+        ]
+        .value_counts()
+        .reindex(
+            [
+                "10 a 14 anos",
+                "15 a 19 anos",
+            ],
+            fill_value=0
+        )
+        .rename_axis(
+            "Faixa etária"
+        )
+        .reset_index(
+            name="Notificações"
+        )
+    )
 
-        a1, a2 = st.columns(2)
+    total_faixa = (
+        faixa_plot[
+            "Notificações"
+        ].sum()
+    )
 
-        with a1:
-            var1_nome = st.selectbox(
-                "Primeira variável",
-                list(opcoes_associacao.keys()),
-                index=0,
-                key="assoc_var1",
-            )
+    faixa_plot[
+        "Percentual"
+    ] = np.where(
+        total_faixa > 0,
+        faixa_plot[
+            "Notificações"
+        ]
+        / total_faixa
+        * 100,
+        0,
+    )
 
-        with a2:
-            opcoes_var2 = [
-                x for x in opcoes_associacao.keys()
-                if x != var1_nome
-            ]
+    fig_faixa = px.bar(
+        faixa_plot,
+        x="Faixa etária",
+        y="Notificações",
+        color="Faixa etária",
+        color_discrete_map={
+            "10 a 14 anos":
+                IDADE_10_14,
+            "15 a 19 anos":
+                IDADE_15_19,
+        },
+        text="Notificações",
+        hover_data={
+            "Percentual": ":.1f"
+        },
+        title=(
+            "Notificações segundo faixa etária"
+        ),
+    )
 
-            var2_nome = st.selectbox(
-                "Segunda variável",
-                opcoes_var2,
-                index=(
-                    opcoes_var2.index("Recorrência")
-                    if "Recorrência" in opcoes_var2
-                    else 0
-                ),
-                key="assoc_var2",
-            )
+    fig_faixa.update_layout(
+        xaxis_title="",
+        yaxis_title=(
+            "Número de notificações"
+        ),
+        showlegend=False,
+    )
 
-        col1 = opcoes_associacao[var1_nome]
-        col2 = opcoes_associacao[var2_nome]
+    estilo_figura(
+        fig_faixa,
+        400
+    )
 
-        base_assoc = dados[[col1, col2]].copy()
+    st.plotly_chart(
+        fig_faixa,
+        use_container_width=True
+    )
 
-        invalidos = ["Ignorado", "Não informado", "Não se aplica"]
+# ------------------------------------------------------------
+# IDADE SIMPLES
+# ------------------------------------------------------------
 
-        base_assoc = base_assoc[
-            ~base_assoc[col1].isin(invalidos)
-            & ~base_assoc[col2].isin(invalidos)
-        ].dropna()
+idade_plot = (
+    dados[
+        "IDADE_ANOS"
+    ]
+    .value_counts()
+    .reindex(
+        range(10, 20),
+        fill_value=0
+    )
+    .rename_axis("Idade")
+    .reset_index(
+        name="Notificações"
+    )
+)
 
-        tabela = pd.crosstab(
-            base_assoc[col1],
-            base_assoc[col2],
+fig_idade = px.bar(
+    idade_plot,
+    x="Idade",
+    y="Notificações",
+    color="Notificações",
+    color_continuous_scale=[
+        "#D7F0ED",
+        "#2A9D8F",
+        "#E9A23B",
+    ],
+    text="Notificações",
+    title=(
+        "Distribuição por idade simples"
+    ),
+)
+
+fig_idade.update_layout(
+    xaxis=dict(
+        dtick=1
+    ),
+    xaxis_title="Idade (anos)",
+    yaxis_title=(
+        "Número de notificações"
+    ),
+    coloraxis_showscale=False,
+)
+
+estilo_figura(
+    fig_idade,
+    390
+)
+
+st.plotly_chart(
+    fig_idade,
+    use_container_width=True
+)
+
+# ------------------------------------------------------------
+# RAÇA/COR — SOMENTE VÁLIDOS
+# ------------------------------------------------------------
+
+perfil3, perfil4 = st.columns(2)
+
+with perfil3:
+
+    raca_plot = (
+        dados_raca_valida[
+            "RACA_COR_DESC"
+        ]
+        .value_counts()
+        .reindex(
+            RACA_VALIDA,
+            fill_value=0
+        )
+        .rename_axis("Raça/cor")
+        .reset_index(
+            name="Notificações"
+        )
+    )
+
+    total_raca_valida = (
+        raca_plot[
+            "Notificações"
+        ].sum()
+    )
+
+    raca_plot[
+        "Percentual"
+    ] = np.where(
+        total_raca_valida > 0,
+        raca_plot[
+            "Notificações"
+        ]
+        / total_raca_valida
+        * 100,
+        0,
+    )
+
+    fig_raca = px.bar(
+        raca_plot,
+        x="Notificações",
+        y="Raça/cor",
+        orientation="h",
+        color="Raça/cor",
+        color_discrete_map=(
+            CORES_RACA
+        ),
+        text="Notificações",
+        hover_data={
+            "Percentual": ":.1f"
+        },
+        title=(
+            "Notificações segundo raça/cor"
+        ),
+    )
+
+    fig_raca.update_layout(
+        xaxis_title=(
+            "Número de notificações"
+        ),
+        yaxis_title="",
+        showlegend=False,
+    )
+
+    estilo_figura(
+        fig_raca,
+        430
+    )
+
+    st.plotly_chart(
+        fig_raca,
+        use_container_width=True
+    )
+
+    st.caption(
+        f"N válido = "
+        f"{numero_br(total_raca_valida)}. "
+        "Ignorados e não informados não "
+        "integram esta distribuição."
+    )
+
+# ------------------------------------------------------------
+# ESCOLARIDADE — SOMENTE VÁLIDOS
+# ------------------------------------------------------------
+
+with perfil4:
+
+    esc_plot = (
+        dados_esc_valida[
+            "ESCOLARIDADE_DESC"
+        ]
+        .value_counts()
+        .reindex(
+            ESCOLARIDADE_VALIDA,
+            fill_value=0
+        )
+        .rename_axis(
+            "Escolaridade"
+        )
+        .reset_index(
+            name="Notificações"
+        )
+    )
+
+    total_esc_valida = (
+        esc_plot[
+            "Notificações"
+        ].sum()
+    )
+
+    esc_plot[
+        "Percentual"
+    ] = np.where(
+        total_esc_valida > 0,
+        esc_plot[
+            "Notificações"
+        ]
+        / total_esc_valida
+        * 100,
+        0,
+    )
+
+    esc_plot = (
+        esc_plot
+        .sort_values(
+            "Notificações"
+        )
+    )
+
+    fig_esc = px.bar(
+        esc_plot,
+        x="Notificações",
+        y="Escolaridade",
+        orientation="h",
+        color="Escolaridade",
+        color_discrete_map=(
+            CORES_ESCOLARIDADE
+        ),
+        text="Notificações",
+        hover_data={
+            "Percentual": ":.1f"
+        },
+        title=(
+            "Notificações segundo escolaridade"
+        ),
+    )
+
+    fig_esc.update_layout(
+        xaxis_title=(
+            "Número de notificações"
+        ),
+        yaxis_title="",
+        showlegend=False,
+    )
+
+    estilo_figura(
+        fig_esc,
+        430
+    )
+
+    st.plotly_chart(
+        fig_esc,
+        use_container_width=True
+    )
+
+    st.caption(
+        f"N válido = "
+        f"{numero_br(total_esc_valida)}. "
+        "Ignorado, não informado e "
+        "'não se aplica' não integram "
+        "esta distribuição."
+    )
+
+# ============================================================
+# 17. CARACTERÍSTICAS DA AUTOLESÃO
+# ============================================================
+
+titulo_secao(
+    "Características da autolesão",
+    "Recorrência e métodos registrados nas notificações."
+)
+
+car1, car2 = st.columns(
+    [0.8, 1.2]
+)
+
+# ------------------------------------------------------------
+# RECORRÊNCIA — SOMENTE SIM/NÃO
+# ------------------------------------------------------------
+
+with car1:
+
+    rec_plot = (
+        dados_rec_valida[
+            "RECORRENCIA_DESC"
+        ]
+        .value_counts()
+        .reindex(
+            RECORRENCIA_VALIDA,
+            fill_value=0
+        )
+        .rename_axis(
+            "Recorrência"
+        )
+        .reset_index(
+            name="Notificações"
+        )
+    )
+
+    total_rec_valida = (
+        rec_plot[
+            "Notificações"
+        ].sum()
+    )
+
+    rec_plot[
+        "Percentual"
+    ] = np.where(
+        total_rec_valida > 0,
+        rec_plot[
+            "Notificações"
+        ]
+        / total_rec_valida
+        * 100,
+        0,
+    )
+
+    fig_rec = px.bar(
+        rec_plot,
+        x="Recorrência",
+        y="Notificações",
+        color="Recorrência",
+        color_discrete_map={
+            "Sim": REC_SIM,
+            "Não": REC_NAO,
+        },
+        text="Notificações",
+        hover_data={
+            "Percentual": ":.1f"
+        },
+        title=(
+            "Ocorrência anterior / recorrência"
+        ),
+    )
+
+    fig_rec.update_layout(
+        xaxis_title="",
+        yaxis_title=(
+            "Número de notificações"
+        ),
+        showlegend=False,
+    )
+
+    estilo_figura(
+        fig_rec,
+        430
+    )
+
+    st.plotly_chart(
+        fig_rec,
+        use_container_width=True
+    )
+
+    if total_rec_valida > 0:
+
+        pct_sim = (
+            rec_plot.loc[
+                rec_plot[
+                    "Recorrência"
+                ] == "Sim",
+                "Notificações"
+            ].sum()
+            / total_rec_valida
+            * 100
         )
 
-        if tabela.shape[0] >= 2 and tabela.shape[1] >= 2:
-
-            chi2, pvalor, v = cramer_v(tabela)
-
-            r1, r2, r3, r4 = st.columns(4)
-
-            r1.metric("N válido", numero_br(len(base_assoc)))
-            r2.metric(
-                "Qui-quadrado (χ²)",
-                numero_br(chi2, 2) if pd.notna(chi2) else "—",
-            )
-            r3.metric(
-                "p-valor",
-                (
-                    "< 0,001"
-                    if pd.notna(pvalor) and pvalor < 0.001
-                    else numero_br(pvalor, 3)
-                    if pd.notna(pvalor)
-                    else "—"
-                ),
-            )
-            r4.metric(
-                "V de Cramér",
-                numero_br(v, 3) if pd.notna(v) else "—",
-            )
-
-            graf_assoc = (
-                base_assoc.groupby([col1, col2])
-                .size()
-                .reset_index(name="N")
-            )
-
-            graf_assoc["Percentual"] = (
-                graf_assoc.groupby(col1)["N"]
-                .transform(lambda x: x / x.sum() * 100)
-            )
-
-            fig_assoc = px.bar(
-                graf_assoc,
-                x=col1,
-                y="Percentual",
-                color=col2,
-                barmode="stack",
-                title=f"{var2_nome} segundo {var1_nome.lower()}",
-                hover_data={"N": True, "Percentual": ":.1f"},
-            )
-
-            fig_assoc.update_layout(
-                xaxis_title=var1_nome,
-                yaxis_title="Percentual dentro da categoria (%)",
-                legend_title=var2_nome,
-            )
-
-            estilo_figura(fig_assoc, 440)
-            st.plotly_chart(fig_assoc, use_container_width=True)
-
-            st.caption(
-                "O teste qui-quadrado avalia evidência de associação "
-                "entre as variáveis categóricas. O V de Cramér expressa "
-                "a magnitude da associação. Registros ignorados, não "
-                "informados e 'não se aplica' são excluídos desta análise."
-            )
-
-        else:
-
-            st.warning(
-                "A seleção atual não possui categorias suficientes "
-                "para realizar o teste de associação."
-            )
-
-    # ========================================================
-    # 19.2 COMPARAÇÃO DE TAXAS
-    # ========================================================
-
-    with estat2:
-
-        st.markdown("#### Comparação de taxas populacionais")
-
-        comparacao = st.radio(
-            "Comparar",
-            ["Sexo", "Faixa etária"],
-            horizontal=True,
-            key="comparacao_taxa",
+        st.caption(
+            f"N válido = "
+            f"{numero_br(total_rec_valida)}. "
+            f"Recorrência: "
+            f"{percentual_br(pct_sim, 1)}. "
+            "Ignorados e não informados "
+            "não integram esta distribuição."
         )
 
-        base_eventos = df.copy()
-        base_pop = pop.copy()
+# ------------------------------------------------------------
+# MÉTODOS — SOMENTE MÉTODOS MARCADOS
+# ------------------------------------------------------------
 
-        if anos:
-            base_eventos = base_eventos[
-                base_eventos["NU_ANO"].isin(anos)
+with car2:
+
+    if not metodos_long.empty:
+
+        dist_metodo = (
+            metodos_long[
+                "METODO"
             ]
-            base_pop = base_pop[
-                base_pop["ANO"].isin(anos)
+            .value_counts()
+            .rename_axis(
+                "Método"
+            )
+            .reset_index(
+                name="Marcações"
+            )
+            .sort_values(
+                "Marcações"
+            )
+        )
+
+        fig_metodo = px.bar(
+            dist_metodo,
+            x="Marcações",
+            y="Método",
+            orientation="h",
+            color="Marcações",
+            color_continuous_scale=(
+                ESCALA_MAGNITUDE
+            ),
+            text="Marcações",
+            title="Métodos utilizados",
+        )
+
+        fig_metodo.update_layout(
+            xaxis_title=(
+                "Número de marcações"
+            ),
+            yaxis_title="",
+            coloraxis_showscale=False,
+        )
+
+        estilo_figura(
+            fig_metodo,
+            430
+        )
+
+        st.plotly_chart(
+            fig_metodo,
+            use_container_width=True
+        )
+
+    else:
+
+        st.info(
+            "Nenhum método válido foi "
+            "identificado na seleção."
+        )
+
+st.caption(
+    "Método é uma variável de resposta múltipla. "
+    "Uma notificação pode registrar mais de um método; "
+    "por isso, a soma das marcações pode superar o número "
+    "de notificações."
+)
+
+# ------------------------------------------------------------
+# QUANTIDADE DE MÉTODOS
+# EXCLUI REGISTROS SEM MÉTODO
+# ------------------------------------------------------------
+
+st.markdown(
+    "#### Número de métodos registrados"
+)
+
+metodos_n_plot = (
+    dados_metodo_valido[
+        "CLASSE_N_METODOS"
+    ]
+    .value_counts()
+    .reindex(
+        [
+            "1 método",
+            "2 métodos",
+            "3 métodos",
+            "4 ou mais métodos",
+        ],
+        fill_value=0
+    )
+    .rename_axis(
+        "Número de métodos"
+    )
+    .reset_index(
+        name="Notificações"
+    )
+)
+
+total_metodo_valido = (
+    metodos_n_plot[
+        "Notificações"
+    ].sum()
+)
+
+metodos_n_plot[
+    "Percentual"
+] = np.where(
+    total_metodo_valido > 0,
+    metodos_n_plot[
+        "Notificações"
+    ]
+    / total_metodo_valido
+    * 100,
+    0,
+)
+
+fig_n_metodos = px.bar(
+    metodos_n_plot,
+    x="Número de métodos",
+    y="Notificações",
+    color="Número de métodos",
+    color_discrete_map={
+        "1 método": AZUL2,
+        "2 métodos": "#FDCB6E",
+        "3 métodos": "#F28E2B",
+        "4 ou mais métodos": "#A61B29",
+    },
+    text="Notificações",
+    hover_data={
+        "Percentual": ":.1f"
+    },
+    title=(
+        "Quantidade de métodos entre notificações "
+        "com pelo menos um método registrado"
+    ),
+)
+
+fig_n_metodos.update_layout(
+    xaxis_title="",
+    yaxis_title=(
+        "Número de notificações"
+    ),
+    showlegend=False,
+)
+
+estilo_figura(
+    fig_n_metodos,
+    390
+)
+
+st.plotly_chart(
+    fig_n_metodos,
+    use_container_width=True
+)
+
+st.caption(
+    f"N válido = {numero_br(total_metodo_valido)}. "
+    "Notificações sem nenhum método marcado são excluídas "
+    "desta distribuição e permanecem contabilizadas na "
+    "avaliação de qualidade."
+)
+
+# ============================================================
+# 18. ANÁLISE ESTATÍSTICA
+# ============================================================
+
+titulo_secao(
+    "Análise estatística",
+    "Associação entre características, comparação de taxas "
+    "e avaliação da tendência temporal."
+)
+
+# ------------------------------------------------------------
+# 18.1 ASSOCIAÇÃO
+# ------------------------------------------------------------
+
+st.markdown(
+    "#### Associação entre características"
+)
+
+opcoes_associacao = {
+    "Sexo": (
+        "SEXO_DESC",
+        SEXO_VALIDO
+    ),
+    "Faixa etária": (
+        "FAIXA_ETARIA",
+        [
+            "10 a 14 anos",
+            "15 a 19 anos"
+        ]
+    ),
+    "Raça/cor": (
+        "RACA_COR_DESC",
+        RACA_VALIDA
+    ),
+    "Escolaridade": (
+        "ESCOLARIDADE_DESC",
+        ESCOLARIDADE_VALIDA
+    ),
+    "Recorrência": (
+        "RECORRENCIA_DESC",
+        RECORRENCIA_VALIDA
+    ),
+}
+
+a1, a2 = st.columns(2)
+
+with a1:
+
+    var1_nome = st.selectbox(
+        "Primeira variável",
+        list(
+            opcoes_associacao.keys()
+        ),
+        index=0,
+        key="assoc_var1",
+    )
+
+with a2:
+
+    opcoes_var2 = [
+        item
+        for item
+        in opcoes_associacao.keys()
+        if item != var1_nome
+    ]
+
+    indice_rec = (
+        opcoes_var2.index(
+            "Recorrência"
+        )
+        if "Recorrência"
+        in opcoes_var2
+        else 0
+    )
+
+    var2_nome = st.selectbox(
+        "Segunda variável",
+        opcoes_var2,
+        index=indice_rec,
+        key="assoc_var2",
+    )
+
+col1, validos1 = (
+    opcoes_associacao[
+        var1_nome
+    ]
+)
+
+col2, validos2 = (
+    opcoes_associacao[
+        var2_nome
+    ]
+)
+
+# INTERSEÇÃO DE RESPOSTAS VÁLIDAS
+
+base_assoc = dados[
+    dados[col1].isin(validos1)
+    & dados[col2].isin(validos2)
+].copy()
+
+tabela_assoc = pd.crosstab(
+    base_assoc[col1],
+    base_assoc[col2],
+)
+
+if (
+    tabela_assoc.shape[0] >= 2
+    and tabela_assoc.shape[1] >= 2
+):
+
+    chi2, pvalor, v = (
+        cramer_v(
+            tabela_assoc
+        )
+    )
+
+    e1, e2, e3, e4 = (
+        st.columns(4)
+    )
+
+    e1.metric(
+        "N válido",
+        numero_br(
+            len(base_assoc)
+        )
+    )
+
+    e2.metric(
+        "Qui-quadrado (χ²)",
+        (
+            numero_br(chi2, 2)
+            if pd.notna(chi2)
+            else "—"
+        )
+    )
+
+    e3.metric(
+        "p-valor",
+        (
+            "< 0,001"
+            if pd.notna(pvalor)
+            and pvalor < 0.001
+            else
+            numero_br(
+                pvalor,
+                3
+            )
+            if pd.notna(pvalor)
+            else "—"
+        )
+    )
+
+    e4.metric(
+        "V de Cramér",
+        (
+            numero_br(v, 3)
+            if pd.notna(v)
+            else "—"
+        )
+    )
+
+    graf_assoc = (
+        base_assoc
+        .groupby(
+            [
+                col1,
+                col2
             ]
+        )
+        .size()
+        .reset_index(
+            name="N"
+        )
+    )
 
-        if municipios:
+    graf_assoc[
+        "Percentual"
+    ] = (
+        graf_assoc
+        .groupby(
+            col1
+        )["N"]
+        .transform(
+            lambda x:
+            x / x.sum() * 100
+        )
+    )
 
-            codigos = df.loc[
-                df["MUNICÍPIO"].isin(municipios),
-                "COD_MUN_6",
-            ].unique()
+    fig_assoc = px.bar(
+        graf_assoc,
+        x=col1,
+        y="Percentual",
+        color=col2,
+        barmode="stack",
+        hover_data={
+            "N": True,
+            "Percentual": ":.1f"
+        },
+        title=(
+            f"{var2_nome} segundo "
+            f"{var1_nome.lower()}"
+        ),
+    )
 
-            base_eventos = base_eventos[
-                base_eventos["COD_MUN_6"].isin(codigos)
+    fig_assoc.update_layout(
+        xaxis_title=var1_nome,
+        yaxis_title=(
+            "Percentual dentro "
+            "da categoria (%)"
+        ),
+        legend_title=var2_nome,
+    )
+
+    estilo_figura(
+        fig_assoc,
+        430
+    )
+
+    st.plotly_chart(
+        fig_assoc,
+        use_container_width=True
+    )
+
+    st.caption(
+        "O teste utiliza apenas registros com respostas "
+        "válidas simultaneamente nas duas variáveis selecionadas."
+    )
+
+else:
+
+    st.warning(
+        "A seleção atual não possui categorias "
+        "válidas suficientes para o teste."
+    )
+
+# ------------------------------------------------------------
+# 18.2 COMPARAÇÃO DE TAXAS
+# ------------------------------------------------------------
+
+st.markdown(
+    "#### Comparação de taxas"
+)
+
+comparacao = st.radio(
+    "Comparar taxas por:",
+    [
+        "Sexo",
+        "Faixa etária"
+    ],
+    horizontal=True,
+    key="comparacao_taxa",
+)
+
+base_eventos = df.copy()
+base_pop = pop.copy()
+
+if anos:
+
+    base_eventos = (
+        base_eventos[
+            base_eventos[
+                "NU_ANO"
+            ].isin(anos)
+        ]
+    )
+
+    base_pop = (
+        base_pop[
+            base_pop[
+                "ANO"
+            ].isin(anos)
+        ]
+    )
+
+if municipios:
+
+    codigos = (
+        df.loc[
+            df[
+                "MUNICÍPIO"
+            ].isin(municipios),
+            "COD_MUN_6"
+        ]
+        .unique()
+    )
+
+    base_eventos = (
+        base_eventos[
+            base_eventos[
+                "COD_MUN_6"
+            ].isin(codigos)
+        ]
+    )
+
+    base_pop = (
+        base_pop[
+            base_pop[
+                "COD_MUN_6"
+            ].isin(codigos)
+        ]
+    )
+
+elif regioes:
+
+    codigos = (
+        df.loc[
+            df[
+                "REGIÃO DE SAÚDE"
+            ].isin(regioes),
+            "COD_MUN_6"
+        ]
+        .unique()
+    )
+
+    base_eventos = (
+        base_eventos[
+            base_eventos[
+                "COD_MUN_6"
+            ].isin(codigos)
+        ]
+    )
+
+    base_pop = (
+        base_pop[
+            base_pop[
+                "COD_MUN_6"
+            ].isin(codigos)
+        ]
+    )
+
+resultados_taxa = []
+
+if comparacao == "Sexo":
+
+    definicoes = [
+        (
+            "Feminino",
+            2
+        ),
+        (
+            "Masculino",
+            1
+        ),
+    ]
+
+    for nome, codigo in definicoes:
+
+        n = (
+            base_eventos[
+                "SEXO_DESC"
             ]
+            .eq(nome)
+            .sum()
+        )
 
-            base_pop = base_pop[
-                base_pop["COD_MUN_6"].isin(codigos)
+        p = (
+            base_pop.loc[
+                base_pop[
+                    "SEXO"
+                ] == codigo,
+                "POPULAÇÃO"
             ]
+            .sum()
+        )
 
-        elif regioes:
+        taxa = (
+            n / p * 100000
+            if p > 0
+            else np.nan
+        )
 
-            codigos = df.loc[
-                df["REGIÃO DE SAÚDE"].isin(regioes),
-                "COD_MUN_6",
-            ].unique()
+        li, ls = ic95_taxa(
+            n,
+            p
+        )
 
-            base_eventos = base_eventos[
-                base_eventos["COD_MUN_6"].isin(codigos)
+        resultados_taxa.append({
+            "Grupo": nome,
+            "N": n,
+            "População": p,
+            "Taxa": taxa,
+            "LI95": li,
+            "LS95": ls,
+        })
+
+else:
+
+    definicoes = [
+        (
+            "10 a 14 anos",
+            list(
+                range(10, 15)
+            )
+        ),
+        (
+            "15 a 19 anos",
+            list(
+                range(15, 20)
+            )
+        ),
+    ]
+
+    for nome, idades_grupo in definicoes:
+
+        n = (
+            base_eventos[
+                "IDADE_ANOS"
             ]
+            .isin(
+                idades_grupo
+            )
+            .sum()
+        )
 
-            base_pop = base_pop[
-                base_pop["COD_MUN_6"].isin(codigos)
+        p = (
+            base_pop.loc[
+                base_pop[
+                    "IDADE"
+                ].isin(
+                    idades_grupo
+                ),
+                "POPULAÇÃO"
             ]
+            .sum()
+        )
 
-        resultados_taxa = []
+        taxa = (
+            n / p * 100000
+            if p > 0
+            else np.nan
+        )
 
-        if comparacao == "Sexo":
+        li, ls = ic95_taxa(
+            n,
+            p
+        )
 
-            definicoes = [
-                ("Feminino", 2),
-                ("Masculino", 1),
-            ]
+        resultados_taxa.append({
+            "Grupo": nome,
+            "N": n,
+            "População": p,
+            "Taxa": taxa,
+            "LI95": li,
+            "LS95": ls,
+        })
 
-            for nome, codigo in definicoes:
+taxas_df = pd.DataFrame(
+    resultados_taxa
+)
 
-                n = (
-                    base_eventos["SEXO_DESC"]
-                    .eq(nome)
-                    .sum()
-                )
+if len(taxas_df) == 2:
 
-                p = base_pop.loc[
-                    base_pop["SEXO"] == codigo,
-                    "POPULAÇÃO",
-                ].sum()
+    g1 = taxas_df.iloc[0]
+    g0 = taxas_df.iloc[1]
 
-                taxa = n / p * 100000 if p > 0 else np.nan
-                li, ls = ic95_taxa(n, p)
-
-                resultados_taxa.append({
-                    "Grupo": nome,
-                    "N": n,
-                    "População": p,
-                    "Taxa": taxa,
-                    "LI95": li,
-                    "LS95": ls,
-                })
-
-        else:
-
-            definicoes = [
-                ("10 a 14 anos", list(range(10, 15))),
-                ("15 a 19 anos", list(range(15, 20))),
-            ]
-
-            for nome, idades_grupo in definicoes:
-
-                n = (
-                    base_eventos["IDADE_ANOS"]
-                    .isin(idades_grupo)
-                    .sum()
-                )
-
-                p = base_pop.loc[
-                    base_pop["IDADE"].isin(idades_grupo),
-                    "POPULAÇÃO",
-                ].sum()
-
-                taxa = n / p * 100000 if p > 0 else np.nan
-                li, ls = ic95_taxa(n, p)
-
-                resultados_taxa.append({
-                    "Grupo": nome,
-                    "N": n,
-                    "População": p,
-                    "Taxa": taxa,
-                    "LI95": li,
-                    "LS95": ls,
-                })
-
-        taxas_df = pd.DataFrame(resultados_taxa)
-
-        g1 = taxas_df.iloc[0]
-        g0 = taxas_df.iloc[1]
-
-        rt, rt_li, rt_ls = razao_taxas(
+    rt, rt_li, rt_ls = (
+        razao_taxas(
             g1["N"],
             g1["População"],
             g0["N"],
             g0["População"],
         )
+    )
 
-        m1, m2, m3 = st.columns(3)
+    t1, t2, t3 = (
+        st.columns(3)
+    )
 
-        m1.metric(
-            f"Taxa — {g1['Grupo']}",
-            f"{numero_br(g1['Taxa'], 1)}/100 mil",
-        )
+    t1.metric(
+        f"Taxa — {g1['Grupo']}",
+        (
+            f"{numero_br(g1['Taxa'], 1)}"
+            "/100 mil"
+        ),
+    )
 
-        m2.metric(
-            f"Taxa — {g0['Grupo']}",
-            f"{numero_br(g0['Taxa'], 1)}/100 mil",
-        )
+    t2.metric(
+        f"Taxa — {g0['Grupo']}",
+        (
+            f"{numero_br(g0['Taxa'], 1)}"
+            "/100 mil"
+        ),
+    )
 
-        m3.metric(
-            f"Razão de taxas ({g1['Grupo']} / {g0['Grupo']})",
-            numero_br(rt, 2),
-        )
+    t3.metric(
+        "Razão de taxas",
+        numero_br(rt, 2),
+    )
 
-        fig_taxas = go.Figure()
+    fig_taxas = go.Figure()
 
-        fig_taxas.add_trace(
-            go.Scatter(
-                x=taxas_df["Taxa"],
-                y=taxas_df["Grupo"],
-                mode="markers",
-                marker=dict(
-                    size=12,
-                    color=[VERMELHO, AZUL],
+    fig_taxas.add_trace(
+        go.Scatter(
+            x=taxas_df["Taxa"],
+            y=taxas_df["Grupo"],
+            mode="markers",
+            marker=dict(
+                size=12,
+                color=[
+                    VERMELHO,
+                    AZUL
+                ]
+            ),
+            error_x=dict(
+                type="data",
+                symmetric=False,
+                array=(
+                    taxas_df[
+                        "LS95"
+                    ]
+                    - taxas_df[
+                        "Taxa"
+                    ]
                 ),
-                error_x=dict(
-                    type="data",
-                    symmetric=False,
-                    array=taxas_df["LS95"] - taxas_df["Taxa"],
-                    arrayminus=taxas_df["Taxa"] - taxas_df["LI95"],
+                arrayminus=(
+                    taxas_df[
+                        "Taxa"
+                    ]
+                    - taxas_df[
+                        "LI95"
+                    ]
                 ),
-                customdata=np.stack(
-                    [
-                        taxas_df["N"],
-                        taxas_df["LI95"],
-                        taxas_df["LS95"],
-                    ],
-                    axis=-1,
-                ),
-                hovertemplate=(
-                    "<b>%{y}</b><br>"
-                    "Notificações: %{customdata[0]:,.0f}<br>"
-                    "Taxa: %{x:.1f}/100 mil<br>"
-                    "IC95%: %{customdata[1]:.1f}–%{customdata[2]:.1f}"
-                    "<extra></extra>"
-                ),
-            )
+            ),
         )
+    )
 
-        fig_taxas.update_layout(
-            title="Taxas específicas e intervalos de confiança de 95%",
-            xaxis_title="Taxa por 100 mil adolescentes",
-            yaxis_title="",
-            showlegend=False,
-        )
+    fig_taxas.update_layout(
+        title=(
+            "Taxas específicas e IC95%"
+        ),
+        xaxis_title=(
+            "Taxa por 100 mil adolescentes"
+        ),
+        yaxis_title="",
+        showlegend=False,
+    )
 
-        estilo_figura(fig_taxas, 350)
-        st.plotly_chart(fig_taxas, use_container_width=True)
+    estilo_figura(
+        fig_taxas,
+        340
+    )
 
-        if pd.notna(rt):
+    st.plotly_chart(
+        fig_taxas,
+        use_container_width=True
+    )
 
-            st.markdown(
-                f"**Razão de taxas:** {numero_br(rt, 2)} "
-                f"(IC95% {numero_br(rt_li, 2)}–{numero_br(rt_ls, 2)})."
-            )
+    if pd.notna(rt):
 
         st.caption(
-            "As comparações utilizam apenas dimensões para as quais "
-            "a base populacional possui denominadores compatíveis."
+            f"Razão de taxas = "
+            f"{numero_br(rt, 2)} "
+            f"(IC95% "
+            f"{numero_br(rt_li, 2)}–"
+            f"{numero_br(rt_ls, 2)})."
         )
 
-    # ========================================================
-    # 19.3 TENDÊNCIA TEMPORAL
-    # ========================================================
+# ------------------------------------------------------------
+# 18.3 TENDÊNCIA ESTATÍSTICA
+# ------------------------------------------------------------
 
-    with estat3:
+st.markdown(
+    "#### Tendência estatística temporal"
+)
 
-        st.markdown("#### Tendência estatística das taxas anuais")
+serie_eventos = (
+    df.groupby(
+        "NU_ANO"
+    )
+    .size()
+    .reindex(
+        range(2014, 2025),
+        fill_value=0
+    )
+    .rename("Notificações")
+    .reset_index()
+    .rename(
+        columns={
+            "NU_ANO": "Ano"
+        }
+    )
+)
 
-        st.caption(
-            "A tendência é estimada sobre as taxas anuais de notificação. "
-            "O modelo abaixo utiliza regressão log-linear das taxas como "
-            "síntese descritiva da variação temporal."
+pop_anual = (
+    pop.groupby(
+        "ANO",
+        as_index=False
+    )["POPULAÇÃO"]
+    .sum()
+    .rename(
+        columns={
+            "ANO": "Ano"
+        }
+    )
+)
+
+tendencia = (
+    serie_eventos
+    .merge(
+        pop_anual,
+        on="Ano",
+        how="left"
+    )
+)
+
+tendencia[
+    "Taxa"
+] = (
+    tendencia[
+        "Notificações"
+    ]
+    / tendencia[
+        "POPULAÇÃO"
+    ]
+    * 100000
+)
+
+try:
+
+    from scipy.stats import linregress
+
+    tendencia_modelo = (
+        tendencia[
+            tendencia[
+                "Taxa"
+            ] > 0
+        ]
+        .copy()
+    )
+
+    x = (
+        tendencia_modelo[
+            "Ano"
+        ]
+        .astype(float)
+    )
+
+    y = np.log(
+        tendencia_modelo[
+            "Taxa"
+        ]
+        .astype(float)
+    )
+
+    resultado = linregress(
+        x,
+        y
+    )
+
+    beta = resultado.slope
+    se_beta = resultado.stderr
+
+    vap = (
+        np.exp(beta) - 1
+    ) * 100
+
+    li_vap = (
+        np.exp(
+            beta
+            - 1.96 * se_beta
         )
+        - 1
+    ) * 100
 
-        serie_eventos = (
-            df.groupby("NU_ANO")
-            .size()
-            .reindex(range(2014, 2025), fill_value=0)
-            .rename("Notificações")
-            .reset_index()
-            .rename(columns={"index": "Ano"})
+    ls_vap = (
+        np.exp(
+            beta
+            + 1.96 * se_beta
         )
+        - 1
+    ) * 100
 
-        if "NU_ANO" in serie_eventos.columns:
-            serie_eventos = serie_eventos.rename(
-                columns={"NU_ANO": "Ano"}
-            )
+    tt1, tt2, tt3 = (
+        st.columns(3)
+    )
 
-        pop_anual = (
-            pop.groupby("ANO", as_index=False)["POPULAÇÃO"]
-            .sum()
-            .rename(columns={"ANO": "Ano"})
+    tt1.metric(
+        "Variação percentual anual",
+        percentual_br(
+            vap,
+            1
         )
+    )
 
-        tendencia = serie_eventos.merge(
-            pop_anual,
-            on="Ano",
-            how="left",
+    tt2.metric(
+        "IC95%",
+        (
+            f"{numero_br(li_vap, 1)}% "
+            f"a {numero_br(ls_vap, 1)}%"
         )
+    )
 
-        tendencia["Taxa"] = (
-            tendencia["Notificações"]
-            / tendencia["POPULAÇÃO"]
-            * 100000
+    tt3.metric(
+        "p-valor",
+        (
+            "< 0,001"
+            if resultado.pvalue
+            < 0.001
+            else numero_br(
+                resultado.pvalue,
+                3
+            )
         )
+    )
 
-        tendencia_modelo = tendencia[
-            tendencia["Taxa"] > 0
-        ].copy()
+    tendencia[
+        "Taxa estimada"
+    ] = np.exp(
+        resultado.intercept
+        + resultado.slope
+        * tendencia["Ano"]
+    )
 
-        try:
+    fig_tend = go.Figure()
 
-            from scipy.stats import linregress
+    fig_tend.add_trace(
+        go.Scatter(
+            x=tendencia["Ano"],
+            y=tendencia["Taxa"],
+            mode="lines+markers",
+            name="Taxa observada",
+            line=dict(
+                color=VERMELHO,
+                width=3
+            ),
+        )
+    )
 
-            x = tendencia_modelo["Ano"].astype(float)
-            y = np.log(tendencia_modelo["Taxa"].astype(float))
+    fig_tend.add_trace(
+        go.Scatter(
+            x=tendencia["Ano"],
+            y=tendencia[
+                "Taxa estimada"
+            ],
+            mode="lines",
+            name="Tendência estimada",
+            line=dict(
+                color=AZUL,
+                width=2,
+                dash="dash",
+            ),
+        )
+    )
 
-            resultado = linregress(x, y)
+    fig_tend.update_layout(
+        title=(
+            "Taxa observada e tendência estimada"
+        ),
+        xaxis_title="Ano",
+        yaxis_title=(
+            "Taxa por 100 mil adolescentes"
+        ),
+        hovermode="x unified",
+    )
 
-            beta = resultado.slope
-            se_beta = resultado.stderr
+    estilo_figura(
+        fig_tend,
+        410
+    )
 
-            vap = (np.exp(beta) - 1) * 100
+    st.plotly_chart(
+        fig_tend,
+        use_container_width=True
+    )
 
-            li_vap = (
-                np.exp(beta - 1.96 * se_beta) - 1
-            ) * 100
+except Exception as erro:
 
-            ls_vap = (
-                np.exp(beta + 1.96 * se_beta) - 1
-            ) * 100
+    st.warning(
+        "Não foi possível calcular "
+        "a tendência estatística."
+    )
 
-            p_tendencia = resultado.pvalue
-
-            t1, t2, t3 = st.columns(3)
-
-            t1.metric(
-                "Variação percentual anual",
-                percentual_br(vap, 1),
-            )
-
-            t2.metric(
-                "IC95%",
-                (
-                    f"{numero_br(li_vap, 1)}% a "
-                    f"{numero_br(ls_vap, 1)}%"
-                ),
-            )
-
-            t3.metric(
-                "p-valor",
-                (
-                    "< 0,001"
-                    if p_tendencia < 0.001
-                    else numero_br(p_tendencia, 3)
-                ),
-            )
-
-            tendencia["Taxa estimada"] = np.exp(
-                resultado.intercept
-                + resultado.slope * tendencia["Ano"]
-            )
-
-            fig_tend = go.Figure()
-
-            fig_tend.add_trace(
-                go.Scatter(
-                    x=tendencia["Ano"],
-                    y=tendencia["Taxa"],
-                    mode="lines+markers",
-                    name="Taxa observada",
-                    line=dict(
-                        color=VERMELHO,
-                        width=3,
-                    ),
-                )
-            )
-
-            fig_tend.add_trace(
-                go.Scatter(
-                    x=tendencia["Ano"],
-                    y=tendencia["Taxa estimada"],
-                    mode="lines",
-                    name="Tendência estimada",
-                    line=dict(
-                        color=AZUL,
-                        width=2,
-                        dash="dash",
-                    ),
-                )
-            )
-
-            fig_tend.update_layout(
-                title="Taxa observada e tendência temporal estimada",
-                xaxis_title="Ano",
-                yaxis_title="Taxa por 100 mil adolescentes",
-                hovermode="x unified",
-            )
-
-            estilo_figura(fig_tend, 430)
-            st.plotly_chart(fig_tend, use_container_width=True)
-
-            st.caption(
-                "A variação percentual anual resume a direção e a "
-                "magnitude média da tendência no período. O resultado "
-                "deve ser interpretado como tendência das notificações "
-                "registradas, e não como incidência clínica de autolesão."
-            )
-
-        except Exception as erro:
-
-            st.warning(
-                "Não foi possível calcular a tendência estatística."
-            )
-            st.caption(str(erro))
+    st.caption(
+        str(erro)
+    )
 
 # ============================================================
-# 20. QUALIDADE DOS DADOS
+# 19. QUALIDADE DOS DADOS
 # ============================================================
 
-with abas[6]:
+titulo_secao(
+    "Qualidade dos dados",
+    "Nesta seção, diferentemente das análises epidemiológicas, "
+    "as respostas ignoradas, não informadas, não aplicáveis e "
+    "ausências de método são deliberadamente consideradas para "
+    "avaliar a qualidade do preenchimento."
+)
 
-    st.subheader("Qualidade e completude da informação")
 
-    def completude(base, coluna, validos=None):
+def completude_categoria(
+    base,
+    coluna,
+    categorias_validas
+):
 
-        if validos is None:
+    if len(base) == 0:
+        return np.nan
 
-            invalidos = [
-                "Ignorado",
-                "Não informado",
-                "Não se aplica",
+    return (
+        base[coluna]
+        .isin(
+            categorias_validas
+        )
+        .mean()
+        * 100
+    )
+
+
+qualidade = pd.DataFrame({
+    "Variável": [
+        "Sexo",
+        "Raça/cor",
+        "Escolaridade",
+        "Recorrência",
+        "Método",
+        "Município",
+        "Região de Saúde",
+    ],
+    "Completude (%)": [
+        completude_categoria(
+            dados,
+            "SEXO_DESC",
+            SEXO_VALIDO,
+        ),
+        completude_categoria(
+            dados,
+            "RACA_COR_DESC",
+            RACA_VALIDA,
+        ),
+        completude_categoria(
+            dados,
+            "ESCOLARIDADE_DESC",
+            ESCOLARIDADE_VALIDA,
+        ),
+        completude_categoria(
+            dados,
+            "RECORRENCIA_DESC",
+            RECORRENCIA_VALIDA,
+        ),
+        (
+            (
+                dados[
+                    "N_METODOS"
+                ] >= 1
+            ).mean()
+            * 100
+            if len(dados)
+            else np.nan
+        ),
+        (
+            dados[
+                "MUNICÍPIO"
             ]
+            .notna()
+            .mean()
+            * 100
+            if len(dados)
+            else np.nan
+        ),
+        (
+            dados[
+                "REGIÃO DE SAÚDE"
+            ]
+            .notna()
+            .mean()
+            * 100
+            if len(dados)
+            else np.nan
+        ),
+    ],
+})
 
-            return (
-                ~base[coluna].isin(invalidos)
-                & base[coluna].notna()
-            ).mean() * 100
-
-        return base[coluna].isin(validos).mean() * 100
-
-    indicadores_qualidade = pd.DataFrame({
-        "Variável": [
-            "Sexo",
-            "Raça/cor",
-            "Escolaridade",
-            "Recorrência",
-            "Município",
-            "Região de Saúde",
-        ],
-        "Completude (%)": [
-            completude(
-                dados,
-                "SEXO_DESC",
-                ["Feminino", "Masculino"],
-            ),
-            completude(dados, "RACA_COR_DESC"),
-            completude(dados, "ESCOLARIDADE_DESC"),
-            completude(
-                dados,
-                "RECORRENCIA_DESC",
-                ["Sim", "Não"],
-            ),
-            dados["MUNICÍPIO"].notna().mean() * 100,
-            dados["REGIÃO DE SAÚDE"].notna().mean() * 100,
-        ],
-    })
-
-    indicadores_qualidade = indicadores_qualidade.sort_values(
+qualidade = (
+    qualidade
+    .sort_values(
         "Completude (%)"
     )
+)
 
-    fig_comp = px.bar(
-        indicadores_qualidade,
-        x="Completude (%)",
-        y="Variável",
-        orientation="h",
-        color="Completude (%)",
-        color_continuous_scale=[
-            "#E15759",
-            "#F28E2B",
-            "#FDCB6E",
-            "#59A14F",
-        ],
-        text="Completude (%)",
-        title="Completude das principais variáveis",
-        range_x=[0, 100],
+fig_qualidade = px.bar(
+    qualidade,
+    x="Completude (%)",
+    y="Variável",
+    orientation="h",
+    color="Completude (%)",
+    color_continuous_scale=[
+        "#E15759",
+        "#F28E2B",
+        "#FDCB6E",
+        "#59A14F",
+    ],
+    text="Completude (%)",
+    title=(
+        "Completude das principais variáveis"
+    ),
+    range_x=[
+        0,
+        100
+    ],
+)
+
+fig_qualidade.update_traces(
+    texttemplate="%{text:.1f}%"
+)
+
+fig_qualidade.update_layout(
+    xaxis_title="Completude (%)",
+    yaxis_title="",
+    coloraxis_showscale=False,
+)
+
+estilo_figura(
+    fig_qualidade,
+    440
+)
+
+st.plotly_chart(
+    fig_qualidade,
+    use_container_width=True
+)
+
+# ------------------------------------------------------------
+# QUALIDADE AO LONGO DO TEMPO
+# ------------------------------------------------------------
+
+linhas_qualidade = []
+
+for ano, base_ano in (
+    dados.groupby(
+        "NU_ANO"
     )
+):
 
-    fig_comp.update_traces(
-        texttemplate="%{text:.1f}%",
-    )
-
-    fig_comp.update_layout(
-        xaxis_title="Completude (%)",
-        yaxis_title="",
-        coloraxis_showscale=False,
-    )
-
-    estilo_figura(fig_comp, 430)
-    st.plotly_chart(fig_comp, use_container_width=True)
-
-    # --------------------------------------------------------
-    # Completude por ano
-    # --------------------------------------------------------
-
-    linhas = []
-
-    for ano, base_ano in dados.groupby("NU_ANO"):
-
-        linhas.extend([
-            {
-                "Ano": ano,
-                "Variável": "Sexo",
-                "Completude": completude(
+    linhas_qualidade.extend([
+        {
+            "Ano": ano,
+            "Variável": "Sexo",
+            "Completude":
+                completude_categoria(
                     base_ano,
                     "SEXO_DESC",
-                    ["Feminino", "Masculino"],
+                    SEXO_VALIDO,
                 ),
-            },
-            {
-                "Ano": ano,
-                "Variável": "Raça/cor",
-                "Completude": completude(
+        },
+        {
+            "Ano": ano,
+            "Variável": "Raça/cor",
+            "Completude":
+                completude_categoria(
                     base_ano,
                     "RACA_COR_DESC",
+                    RACA_VALIDA,
                 ),
-            },
-            {
-                "Ano": ano,
-                "Variável": "Escolaridade",
-                "Completude": completude(
+        },
+        {
+            "Ano": ano,
+            "Variável": "Escolaridade",
+            "Completude":
+                completude_categoria(
                     base_ano,
                     "ESCOLARIDADE_DESC",
+                    ESCOLARIDADE_VALIDA,
                 ),
-            },
-            {
-                "Ano": ano,
-                "Variável": "Recorrência",
-                "Completude": completude(
+        },
+        {
+            "Ano": ano,
+            "Variável": "Recorrência",
+            "Completude":
+                completude_categoria(
                     base_ano,
                     "RECORRENCIA_DESC",
-                    ["Sim", "Não"],
+                    RECORRENCIA_VALIDA,
                 ),
-            },
-        ])
+        },
+        {
+            "Ano": ano,
+            "Variável": "Método",
+            "Completude":
+                (
+                    (
+                        base_ano[
+                            "N_METODOS"
+                        ] >= 1
+                    ).mean()
+                    * 100
+                    if len(base_ano)
+                    else np.nan
+                ),
+        },
+    ])
 
-    comp_ano = pd.DataFrame(linhas)
+comp_ano = pd.DataFrame(
+    linhas_qualidade
+)
 
-    if not comp_ano.empty:
+if not comp_ano.empty:
 
-        matriz_comp = comp_ano.pivot(
+    matriz_comp = (
+        comp_ano
+        .pivot(
             index="Variável",
             columns="Ano",
             values="Completude",
         )
-
-        fig_heat = go.Figure(
-            data=go.Heatmap(
-                z=matriz_comp.values,
-                x=matriz_comp.columns,
-                y=matriz_comp.index,
-                colorscale=[
-                    [0.0, "#E15759"],
-                    [0.5, "#FDCB6E"],
-                    [1.0, "#59A14F"],
-                ],
-                zmin=0,
-                zmax=100,
-                text=np.round(matriz_comp.values, 1),
-                texttemplate="%{text}%",
-                hovertemplate=(
-                    "Ano: %{x}<br>"
-                    "Variável: %{y}<br>"
-                    "Completude: %{z:.1f}%"
-                    "<extra></extra>"
-                ),
-                colorbar=dict(title="Completude (%)"),
-            )
-        )
-
-        fig_heat.update_layout(
-            title="Completude segundo variável e ano de notificação",
-            xaxis_title="Ano",
-            yaxis_title="",
-        )
-
-        estilo_figura(fig_heat, 400)
-        st.plotly_chart(fig_heat, use_container_width=True)
-
-    st.caption(
-        "A análise de completude permite avaliar a qualidade do "
-        "preenchimento das variáveis ao longo do período. Categorias "
-        "ignoradas, não informadas e, quando pertinente, 'não se aplica' "
-        "não são consideradas informação completa."
     )
 
+    fig_heat = go.Figure(
+        data=go.Heatmap(
+            z=matriz_comp.values,
+            x=matriz_comp.columns,
+            y=matriz_comp.index,
+            colorscale=[
+                [
+                    0.0,
+                    "#E15759"
+                ],
+                [
+                    0.5,
+                    "#FDCB6E"
+                ],
+                [
+                    1.0,
+                    "#59A14F"
+                ],
+            ],
+            zmin=0,
+            zmax=100,
+            text=np.round(
+                matriz_comp.values,
+                1
+            ),
+            texttemplate="%{text}%",
+            hovertemplate=(
+                "Ano: %{x}<br>"
+                "Variável: %{y}<br>"
+                "Completude: %{z:.1f}%"
+                "<extra></extra>"
+            ),
+            colorbar=dict(
+                title="Completude (%)"
+            ),
+        )
+    )
+
+    fig_heat.update_layout(
+        title=(
+            "Completude segundo variável "
+            "e ano de notificação"
+        ),
+        xaxis_title="Ano",
+        yaxis_title="",
+    )
+
+    estilo_figura(
+        fig_heat,
+        400
+    )
+
+    st.plotly_chart(
+        fig_heat,
+        use_container_width=True
+    )
+
+# ------------------------------------------------------------
+# DETALHAMENTO DA INCOMPLETUDE
+# ------------------------------------------------------------
+
+st.markdown(
+    "#### Registros sem informação analiticamente válida"
+)
+
+q1, q2, q3, q4, q5 = (
+    st.columns(5)
+)
+
+sexo_invalido = (
+    ~dados[
+        "SEXO_DESC"
+    ].isin(
+        SEXO_VALIDO
+    )
+).sum()
+
+raca_invalida = (
+    ~dados[
+        "RACA_COR_DESC"
+    ].isin(
+        RACA_VALIDA
+    )
+).sum()
+
+esc_invalida = (
+    ~dados[
+        "ESCOLARIDADE_DESC"
+    ].isin(
+        ESCOLARIDADE_VALIDA
+    )
+).sum()
+
+rec_invalida = (
+    ~dados[
+        "RECORRENCIA_DESC"
+    ].isin(
+        RECORRENCIA_VALIDA
+    )
+).sum()
+
+metodo_ausente = (
+    dados[
+        "N_METODOS"
+    ] == 0
+).sum()
+
+q1.metric(
+    "Sexo",
+    numero_br(
+        sexo_invalido
+    )
+)
+
+q2.metric(
+    "Raça/cor",
+    numero_br(
+        raca_invalida
+    )
+)
+
+q3.metric(
+    "Escolaridade",
+    numero_br(
+        esc_invalida
+    )
+)
+
+q4.metric(
+    "Recorrência",
+    numero_br(
+        rec_invalida
+    )
+)
+
+q5.metric(
+    "Sem método marcado",
+    numero_br(
+        metodo_ausente
+    )
+)
+
+st.caption(
+    "Esses registros permanecem no banco e no total geral "
+    "de notificações, mas não compõem as distribuições "
+    "analíticas específicas das respectivas variáveis."
+)
+
 # ============================================================
-# 21. NOTAS METODOLÓGICAS
+# 20. NOTAS METODOLÓGICAS
 # ============================================================
 
 st.divider()
 
-with st.expander("Notas metodológicas"):
+with st.expander(
+    "Notas metodológicas"
+):
 
     st.markdown(
         """
 **População do estudo**
 
-Notificações de lesão autoprovocada em adolescentes de **10 a 19 anos**,
-residentes em Pernambuco, registradas entre **2014 e 2024**.
+Notificações de lesão autoprovocada entre adolescentes de
+**10 a 19 anos**, residentes em Pernambuco, registradas entre
+**2014 e 2024**.
 
-**Fonte das notificações**
+**Fonte**
 
-Sistema de Informação de Agravos de Notificação (SINAN).
+Sistema de Informação de Agravos de Notificação (SINAN) e
+base populacional utilizada no estudo.
 
 **Universo validado**
 
-O processamento deve reproduzir **12.713 notificações**. O aplicativo
-interrompe o carregamento se esse total não for reproduzido antes da
+O banco analítico reproduz **12.713 notificações** antes da
 aplicação dos filtros.
+
+**Respostas válidas**
+
+Nas análises específicas de sexo, raça/cor, escolaridade e
+recorrência, os percentuais e distribuições são calculados
+somente entre registros com informação analiticamente válida.
+
+Assim:
+
+- sexo: Feminino e Masculino;
+- raça/cor: Branca, Preta, Amarela, Parda e Indígena;
+- recorrência: Sim e Não;
+- escolaridade: categorias informativas de escolaridade.
+
+Categorias **Ignorado**, **Não informado** e **Não se aplica**
+não são tratadas como categorias epidemiológicas da
+distribuição. Elas permanecem no banco e são avaliadas na
+seção de qualidade dos dados.
+
+**Métodos**
+
+Método é uma variável de resposta múltipla. Uma mesma
+notificação pode possuir mais de um método marcado. As
+distribuições de método consideram somente métodos
+efetivamente registrados.
+
+Na análise do número de métodos, notificações sem nenhum
+método marcado são excluídas do denominador analítico e
+avaliadas como ausência de informação na seção de qualidade.
 
 **Taxas**
 
-As taxas são calculadas por 100 mil adolescentes utilizando a população
-correspondente ao ano, município, sexo e idade quando essas dimensões
-estão disponíveis na base populacional.
+As taxas são expressas por **100 mil adolescentes**.
 
-Quando são aplicados filtros para **raça/cor, escolaridade, recorrência
-ou método**, a taxa populacional da seleção não é calculada, porque não
-existem denominadores correspondentes na base populacional utilizada.
+A base populacional permite denominadores por ano,
+município, sexo e idade. Portanto, não são calculadas taxas
+específicas por raça/cor, escolaridade, recorrência ou método.
 
-Para períodos com mais de um ano, o cálculo utiliza a soma das
-notificações dividida pela soma das populações anuais, representando uma
-taxa média sobre pessoas-tempo no período selecionado.
+Quando filtros dessas dimensões estão ativos, a taxa
+populacional da seleção é ocultada para evitar a utilização de
+denominadores incompatíveis.
+
+**Períodos com mais de um ano**
+
+Quando a seleção compreende vários anos, o numerador é
+dividido pela soma das populações anuais correspondentes,
+representando a ocorrência sobre a população-tempo acumulada
+do período.
 
 **Intervalos de confiança**
 
-Os IC95% apresentados para taxas utilizam aproximação baseada na
-distribuição de Poisson. Em municípios com pequeno número de eventos,
-as estimativas podem apresentar maior instabilidade.
+Os intervalos de confiança de 95% das taxas utilizam
+aproximação baseada na distribuição de Poisson. Estimativas
+municipais baseadas em poucos eventos devem ser interpretadas
+com cautela devido à maior instabilidade.
 
-**Raça/cor e escolaridade**
+**Associação**
 
-São analisadas por números, proporções e completude, e não por taxas
-populacionais, devido à ausência de denominadores específicos.
+O teste qui-quadrado avalia associação entre variáveis
+categóricas e o V de Cramér apresenta uma medida da magnitude
+da associação. Somente registros válidos simultaneamente nas
+duas variáveis entram no teste.
 
-**Recorrência**
+**Interpretação epidemiológica**
 
-A proporção de recorrência utiliza como denominador apenas registros
-com respostas válidas **Sim/Não**. Ignorados e não informados são
-preservados para avaliação da qualidade da informação.
-
-**Métodos utilizados**
-
-Os campos de método constituem **resposta múltipla**. Uma mesma
-notificação pode registrar mais de um método. Portanto, a soma das
-marcações pode ser superior ao número total de notificações.
-
-**Análises estatísticas**
-
-O teste qui-quadrado é utilizado para investigar associação entre
-variáveis categóricas, acompanhado pelo **V de Cramér** como medida de
-magnitude da associação. Categorias ignoradas, não informadas e
-não aplicáveis são retiradas dessas comparações.
-
-As razões de taxas comparam grupos para os quais existem denominadores
-populacionais compatíveis. A análise de tendência temporal utiliza a
-transformação logarítmica das taxas anuais para estimar uma variação
-percentual anual descritiva e seu intervalo de confiança.
-
-Os resultados descrevem **notificações registradas no sistema de
-vigilância**. Não devem ser interpretados automaticamente como
-incidência real de todos os episódios de autolesão na população.
+Os resultados descrevem **notificações registradas no sistema
+de vigilância**. Não representam automaticamente a incidência
+real de todos os episódios de autolesão ocorridos na população.
         """
     )
 
 # ============================================================
-# 22. PRÉ-VISUALIZAÇÃO DOS DADOS
+# 21. PRÉ-VISUALIZAÇÃO
 # ============================================================
 
-with st.expander("Pré-visualização dos dados"):
+with st.expander(
+    "Pré-visualização dos dados"
+):
 
     st.caption(
-        "São exibidas somente variáveis analíticas do painel. "
-        "Identificadores desnecessários não são apresentados."
+        "São apresentadas somente variáveis analíticas. "
+        "Identificadores desnecessários não são exibidos."
     )
 
     colunas_preview = [
@@ -2725,26 +3897,42 @@ with st.expander("Pré-visualização dos dados"):
         "MUNICÍPIO",
         "REGIÃO DE SAÚDE",
         "N_METODOS",
-        "MULTIPLOS_METODOS",
     ]
 
     preview = dados[
-        [c for c in colunas_preview if c in dados.columns]
+        [
+            coluna
+            for coluna
+            in colunas_preview
+            if coluna
+            in dados.columns
+        ]
     ].copy()
 
-    preview = preview.rename(columns={
-        "NU_ANO": "Ano",
-        "IDADE_ANOS": "Idade",
-        "FAIXA_ETARIA": "Faixa etária",
-        "SEXO_DESC": "Sexo",
-        "RACA_COR_DESC": "Raça/cor",
-        "ESCOLARIDADE_DESC": "Escolaridade",
-        "RECORRENCIA_DESC": "Recorrência",
-        "MUNICÍPIO": "Município",
-        "REGIÃO DE SAÚDE": "Região de Saúde",
-        "N_METODOS": "Nº de métodos",
-        "MULTIPLOS_METODOS": "Classificação dos métodos",
-    })
+    preview = preview.rename(
+        columns={
+            "NU_ANO":
+                "Ano",
+            "IDADE_ANOS":
+                "Idade",
+            "FAIXA_ETARIA":
+                "Faixa etária",
+            "SEXO_DESC":
+                "Sexo",
+            "RACA_COR_DESC":
+                "Raça/cor",
+            "ESCOLARIDADE_DESC":
+                "Escolaridade",
+            "RECORRENCIA_DESC":
+                "Recorrência",
+            "MUNICÍPIO":
+                "Município",
+            "REGIÃO DE SAÚDE":
+                "Região de Saúde",
+            "N_METODOS":
+                "Nº de métodos",
+        }
+    )
 
     st.dataframe(
         preview.head(500),
@@ -2753,17 +3941,19 @@ with st.expander("Pré-visualização dos dados"):
     )
 
     st.caption(
-        f"Mostrando até 500 registros de "
-        f"{numero_br(len(preview))} registros na seleção atual."
+        f"Exibindo até 500 registros de "
+        f"{numero_br(len(preview))} "
+        f"notificações na seleção atual."
     )
 
 # ============================================================
-# 23. RODAPÉ
+# 22. RODAPÉ
 # ============================================================
 
 st.divider()
 
 st.caption(
-    "Fonte: Sistema de Informação de Agravos de Notificação (SINAN) "
-    "e base populacional utilizada no estudo. Elaboração própria."
+    "Fonte: Sistema de Informação de Agravos de Notificação "
+    "(SINAN) e base populacional utilizada no estudo. "
+    "Elaboração própria."
 )
